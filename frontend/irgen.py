@@ -249,16 +249,33 @@ class IRGen(ASTTransformer):
             yes = self.makebool(True)
             return self.lazy_conditional(node, node.lhs, yes, node.rhs)
 
+        lty = node.lhs.ty
+        rty = node.rhs.ty
+
         self.visit_children(node)
 
-        if op.is_equality() or op.is_relational():
-            return b.icmp_signed(op.op, node.lhs, node.rhs)
+        if str(lty) == 'float' or str(rty) == 'float':
+            if op.is_equality() or op.is_relational():
+                if str(op.op) == "!=":
+                    return b.fcmp_unordered(op.op, node.lhs, node.rhs)
+                else:
+                    return b.fcmp_ordered(op.op, node.lhs, node.rhs)
 
-        callbacks = {
-            '+': b.add, '-': b.sub, '*': b.mul, '/': b.sdiv, '%': b.srem
-        }
+            callbacks = {
+                '+': b.fadd, '-': b.fsub, '*': b.fmul, '/': b.fdiv, '%': b.frem
+            }
 
-        return callbacks[op.op](node.lhs, node.rhs)
+            return callbacks[op.op](node.lhs, node.rhs)
+
+        else:
+            if op.is_equality() or op.is_relational():
+                return b.icmp_signed(op.op, node.lhs, node.rhs)
+
+            callbacks = {
+                '+': b.add, '-': b.sub, '*': b.mul, '/': b.sdiv, '%': b.srem
+            }
+
+            return callbacks[op.op](node.lhs, node.rhs)
 
     def lazy_conditional(self, node, cond, yesval, noval):
         b = self.builder
