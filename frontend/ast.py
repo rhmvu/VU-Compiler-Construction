@@ -452,6 +452,14 @@ class IntConst(Const):
 
     def __str__(self):
         return str(self.value)
+        
+
+class FloatConst(Const):
+    children = ['value']
+    types = dict(value='float')
+
+    def __str__(self):
+        return str(self.value)
 
 
 class HexConst(IntConst):
