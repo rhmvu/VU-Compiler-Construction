@@ -1,3 +1,6 @@
+*.idea
+/.idea
+*.iml
 *.swp
 lib/
 build.log
