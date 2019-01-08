@@ -9,8 +9,9 @@ class Type(object):
     can also pass array types like 'int[]' to `get` which will return an
     `ArrayType`.
     '''
-    base_types = frozenset(['bool', 'char', 'int', 'void'])
+    base_types = frozenset(['bool', 'char', 'int', 'void', 'float'])
     int_bits = 32
+    float_bits = 32
     cache = {}
 
     def __init__(self, name):
@@ -452,7 +453,7 @@ class IntConst(Const):
 
     def __str__(self):
         return str(self.value)
-        
+
 
 class FloatConst(Const):
     children = ['value']
