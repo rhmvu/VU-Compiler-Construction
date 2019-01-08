@@ -11,7 +11,6 @@ class Type(object):
     '''
     base_types = frozenset(['bool', 'char', 'int', 'void', 'float'])
     int_bits = 32
-    float_bits = 32
     cache = {}
 
     def __init__(self, name):
