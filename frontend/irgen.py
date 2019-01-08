@@ -231,7 +231,11 @@ class IRGen(ASTTransformer):
             return self.visit(ast.BinaryOp(node.value, eq, false).at(node))
 
         if node.op == '-':
-            return self.builder.neg(self.visit(node.value))
+            if str(node.ty) == 'float':
+                floatconst =  ir.Constant(self.getty(node.ty), 0)
+                return self.builder.fsub(floatconst,self.visit(node.value)) 
+            else:
+                return self.builder.neg(self.visit(node.value))
 
         assert node.op == '~'
         return self.builder.not_(self.visit(node.value))
@@ -256,8 +260,8 @@ class IRGen(ASTTransformer):
 
         if str(lty) == 'float' or str(rty) == 'float':
             if op.is_equality() or op.is_relational():
-                if str(op.op) == "!=":
-                    return b.fcmp_unordered(op.op, node.lhs, node.rhs)
+                if op == "!=":
+                    return b.fcmp_unordered("!=", node.lhs, node.rhs)
                 else:
                     return b.fcmp_ordered(op.op, node.lhs, node.rhs)
 
