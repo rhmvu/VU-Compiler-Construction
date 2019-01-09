@@ -163,6 +163,17 @@ def p_if(p):
     nobody = block(p[7]) if len(p) == 8 else None
     p[0] = ast.If(p[3], block(p[5]), nobody).at(loc(p, 1, 4))
 
+def p_for(p):
+    '''statement : FOR LPAREN expr RPAREN statement'''
+    # TODO: Implement for loop
+
+def p_do_while(p):
+    '''statement : DO statement WHILE LPAREN expr RPAREN'''
+    # TODO: Implement do while
+
+def p_while(p):
+    '''statement : WHILE LPAREN expr RPAREN statement'''
+    # TODO: Implement while
 
 def block(stat):
     if isinstance(stat, ast.Block):
