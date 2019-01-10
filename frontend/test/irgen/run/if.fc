@@ -1,0 +1,7 @@
+int main(){
+  int i = 7;
+  if (i == 7){
+    int j = 5;//printf("%d",7);
+  }
+  return 0;
+}
