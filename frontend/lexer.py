@@ -16,7 +16,7 @@ reserved = (
     'extern', 'static',
     'if', 'else',
     'return',
-    'do', 'while', 'for'
+    'do', 'while', 'for', 'to'
 )
 reserved_map = dict((word, word.upper()) for word in reserved)
 

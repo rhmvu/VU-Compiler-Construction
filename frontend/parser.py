@@ -12,6 +12,7 @@ precedence = (
     ('nonassoc', 'DO'),
     ('nonassoc', 'WHILE'),
     ('nonassoc', 'FOR'),
+    ('nonassoc', 'TO'),
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQ', 'NE'),
@@ -167,16 +168,16 @@ def p_if(p):
     p[0] = ast.If(p[3], block(p[5]), nobody).at(loc(p, 1, 4))
 
 def p_for(p):
-    '''statement : FOR LPAREN expr RPAREN statement'''
-    # TODO: Implement for loop
+    '''statement : FOR LPAREN type ID ASSIGN expr TO expr RPAREN statement'''
+    p[0] = ast.For(p[4], p[6], p[8], block(p[10])).at(loc(p, 1, 9))
 
 def p_do_while(p):
     '''statement : DO statement WHILE LPAREN expr RPAREN'''
-    # TODO: Implement do while
+    p[0] = ast.DoWhile(block(p[2]),p[5]).at(loc(p, 3, 6))
 
 def p_while(p):
     '''statement : WHILE LPAREN expr RPAREN statement'''
-    # TODO: Implement while
+    p[0] = ast.While(block(p[3]),p[5]).at(loc(p, 1, 4))
 
 def block(stat):
     if isinstance(stat, ast.Block):
