@@ -1,6 +1,6 @@
 from util import ASTTransformer
 from ast import Type, Operator, VarDef, ArrayDef, Assignment, Modification, \
-        If, Block, VarUse, BinaryOp, IntConst, Return
+        If, Block, VarUse, BinaryOp, IntConst, Return, While
 
 
 class Desugarer(ASTTransformer):
@@ -30,3 +30,26 @@ class Desugarer(ASTTransformer):
         # to:   lhs = lhs op rhs
         self.visit_children(m)
         return Assignment(m.ref, BinaryOp(m.ref, m.op, m.value)).at(m)
+
+    def visitFor(self, node):
+        # from: for(int node.name = node.expr1 to node.expr2) { node.body }
+        # to:
+        # Block wrapper {
+        # Assignment: int node.name = node.expr1;
+        # While type:  while ( expression: node.name < node.expr2){
+        # new block:
+        # Block:  node.body;
+        # : node.name = node.name + 1
+        # }
+        self.visit_children(node)
+
+        if isinstance(node.ref, str):
+            ref = VarUse(node.ref)
+        initial_assignment = Assignment(ref, node.expr1).at(node)
+        incrementation = Assignment(ref, BinaryOp(ref, Operator('+'), IntConst(1))).at(node)
+        while_body = Block([node.body, incrementation]).at(node)
+        while_condition = BinaryOp(ref, Operator("<"), node.expr2).at(node)
+        while_statement = While(while_condition, while_body).at(node)
+        return Block([initial_assignment, while_statement]).at(node)
+
+

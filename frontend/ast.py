@@ -346,11 +346,11 @@ class DoWhile(Statement):
         return 'do {0.body} while ({0.cond})'.format(self)
 
 class For(Statement):
-    children = ['name', 'expr1', 'expr2', 'body']
-    types = dict(name='str', body='Block', expr1='Expression', expr2='Expression')
+    children = ['ref', 'expr1', 'expr2', 'body']
+    types = dict(ref='str', expr1='Expression', expr2='Expression', body='Block')
 
     def __str__(self):
-        return 'for(int {0.name} = {0.expr1} to {0.expr2}) {0.body}'.format(self)
+        return 'for(int {0.ref} = {0.expr1} to {0.expr2}) {0.body}'.format(self)
 
 
 class Return(Statement):

@@ -172,12 +172,12 @@ def p_for(p):
     p[0] = ast.For(p[4], p[6], p[8], block(p[10])).at(loc(p, 1, 9))
 
 def p_do_while(p):
-    '''statement : DO statement WHILE LPAREN expr RPAREN'''
-    p[0] = ast.DoWhile(block(p[2]),p[5]).at(loc(p, 3, 6))
+    '''statement : DO statement WHILE LPAREN expr RPAREN SEMICOL'''
+    p[0] = ast.DoWhile(block(p[2]), p[5]).at(loc(p, 3, 6))
 
 def p_while(p):
     '''statement : WHILE LPAREN expr RPAREN statement'''
-    p[0] = ast.While(block(p[3]),p[5]).at(loc(p, 1, 4))
+    p[0] = ast.While(p[3], block(p[5])).at(loc(p, 1))
 
 def block(stat):
     if isinstance(stat, ast.Block):
