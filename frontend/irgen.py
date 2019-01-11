@@ -162,7 +162,30 @@ class IRGen(ASTTransformer):
         bbody = self.add_block(prefix + '.body')
         bend = self.add_block(prefix + '.endbody')
 
+        self.builder.branch(bcond)
+        #insert into bcond block before body
+        self.builder.position_at_start(bcond)
+        cond = self.visit_before(node.cond, bbody)
+        self.builder.cbranch(cond, bbody, bend)
 
+
+
+        # insert instructions for the 'body' block before the 'end' block
+        self.builder.position_at_start(bbody)
+        self.visit_before(node.body, bend)
+        self.builder.branch(bcond)
+
+        # go to the end block to emit further instructions
+        self.builder.position_at_start(bend)
+
+
+    def visitDoWhile(self, node):
+        prefix = self.builder.block.name
+        bcond = self.add_block(prefix + '.cond')
+        bbody = self.add_block(prefix + '.body')
+        bend = self.add_block(prefix + '.endbody')
+
+        self.builder.branch(bbody)
         #insert into bcond block before body
         self.builder.position_at_start(bcond)
         cond = self.visit_before(node.cond, bbody)
