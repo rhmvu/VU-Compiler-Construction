@@ -145,13 +145,15 @@ class IRGen(ASTTransformer):
         # insert instructions for the 'if' block before the 'else' block
         self.builder.position_at_start(bif)
         self.visit_before(node.yesbody, belse)
-        self.builder.branch(bend)
+        if not self.builder.block.is_terminated:
+            self.builder.branch(bend)
 
         # insert instructions for the 'else' block before the end block
         if node.nobody:
             self.builder.position_at_start(belse)
             self.visit_before(node.nobody, bend)
-            self.builder.branch(bend)
+            if not self.builder.block.is_terminated:
+                self.builder.branch(bend)
 
         # go to the end block to emit further instructions
         self.builder.position_at_start(bend)
@@ -175,8 +177,9 @@ class IRGen(ASTTransformer):
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
         self.visit_before(node.body, bend)
-        # Always branch to condition block for evaluation
-        self.builder.branch(bcond)
+        # Always branch to condition block for evaluation unless a break was initiated
+        if not self.builder.block.is_terminated:
+            self.builder.branch(bcond)
 
         # go to the end block to emit further instructions
         self.builder.position_at_start(bend)
@@ -197,11 +200,32 @@ class IRGen(ASTTransformer):
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
         self.visit_before(node.body, bend)
-        # Always branch to condition block for evaluation
-        self.builder.branch(bcond)
+        # Always branch to condition block for evaluation unless a break was initiated
+        if not self.builder.block.is_terminated:
+            self.builder.branch(bcond)
 
         # go to the end block to emit further instructions
         self.builder.position_at_start(bend)
+
+    def visitBreak(self, node):
+        blockname = self.builder.block.name.split('.')
+        endblockname = ''
+
+        for i in range(len(blockname)-1, 0, -1):
+            if blockname[i] == 'body':
+                blockname[i] = 'endbody'
+                for block in blockname:
+                    endblockname += block + '.'
+                endblockname = endblockname[0:-1]
+            else:
+                del blockname[i]
+
+        for block in self.insert_blocks:
+            print(block.name)
+            if block.name == endblockname:
+                self.builder.branch(block)
+                break
+
 
     def visitReturn(self, node):
         self.visit_children(node)

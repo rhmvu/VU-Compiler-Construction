@@ -343,7 +343,7 @@ class DoWhile(Statement):
     types = dict(body='Block', cond='Expression')
 
     def __str__(self):
-        return 'do {0.body} while ({0.cond})'.format(self)
+        return 'do {0.body} while ({0.cond});'.format(self)
 
 class For(Statement):
     children = ['ref', 'expr1', 'expr2', 'body']
@@ -351,6 +351,20 @@ class For(Statement):
 
     def __str__(self):
         return 'for(int {0.ref} = {0.expr1} to {0.expr2}) {0.body}'.format(self)
+
+class Break(Statement):
+    children = []
+    types = dict()
+
+    def __str__(self):
+         return 'break;'
+
+class Continue(Statement):
+    children = []
+    types = dict()
+
+    def __str__(self):
+        return 'continue;'
 
 
 class Return(Statement):

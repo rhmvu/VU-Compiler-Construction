@@ -13,6 +13,8 @@ precedence = (
     ('nonassoc', 'WHILE'),
     ('nonassoc', 'FOR'),
     ('nonassoc', 'TO'),
+    ('nonassoc', 'BREAK'),
+    ('nonassoc', 'CONTINUE'),
     ('left', 'OR'),
     ('left', 'AND'),
     ('left', 'EQ', 'NE'),
@@ -178,6 +180,14 @@ def p_do_while(p):
 def p_while(p):
     '''statement : WHILE LPAREN expr RPAREN statement'''
     p[0] = ast.While(p[3], block(p[5])).at(loc(p, 1))
+
+def p_break(p):
+    '''statement : BREAK SEMICOL'''
+    p[0] = ast.Break().at(loc(p,1))
+
+def p_continue(p):
+    '''statement : CONTINUE SEMICOL'''
+    p[0] = ast.Continue().at(loc(p,1))
 
 def block(stat):
     if isinstance(stat, ast.Block):

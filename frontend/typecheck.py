@@ -94,11 +94,6 @@ class TypeChecker(ASTVisitor):
 
         # Variable initialization must match variable type
         self.visit_children(node)
-        # print("Checking type {} value {}".format(node._type, node.value),flush=True)
-        print(node.value.ty)
-        print(node._type)
-        print(type(node.value.ty))
-        print(type(node._type))
         self.check_type(node.value, node._type)
 
 
@@ -114,6 +109,14 @@ class TypeChecker(ASTVisitor):
             raise NodeError(node, 'Error: array must be non-void')
 
         self.visit_children(node)
+
+    def visitBreak(self,node):
+        if not self.in_loop:
+            raise NodeError(node, 'Error: break must be inside loop')
+
+    def visitContinue(self,node):
+        if not self.in_loop:
+            raise NodeError(node, 'Error: continue must be inside loop')
 
     def visitAssignment(self, node):
         self.visit_children(node)
@@ -136,6 +139,19 @@ class TypeChecker(ASTVisitor):
         # condition must be bool
         self.visit_children(node)
         self.check_type(node.cond, self.tbool)
+
+    def visitLoop(self, node):
+        already_in_loop = self.in_loop
+        self.in_loop = True
+        self.visit_children(node)
+        if not already_in_loop:
+            self.in_loop = False
+
+    def visitWhile(self,node):
+        self.visitLoop(node)
+
+    def visitDoWhile(self,node):
+        self.visitLoop(node)
 
     def visitReturn(self, node):
         # returned type must match function type

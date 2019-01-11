@@ -45,8 +45,7 @@ class Desugarer(ASTTransformer):
 
         if isinstance(node.ref, str):
             ref = VarUse(node.ref)
-        # initial_assignment = Assignment(ref, node.expr1).at(node)
-        initial_assignment = VarDef(Type('int'), str(ref), node.expr1).at(node)
+        initial_assignment = VarDef(Type.get('int'), str(ref), node.expr1).at(node)
         incrementation = Assignment(ref, BinaryOp(ref, Operator('+'), IntConst(1))).at(node)
         while_body = Block([node.body, incrementation]).at(node)
         while_condition = BinaryOp(ref, Operator("<"), node.expr2).at(node)
