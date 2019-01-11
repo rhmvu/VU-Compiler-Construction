@@ -162,7 +162,9 @@ class IRGen(ASTTransformer):
         bbody = self.add_block(prefix + '.body')
         bend = self.add_block(prefix + '.endbody')
 
+        #Branch to condition block
         self.builder.branch(bcond)
+
         #insert into bcond block before body
         self.builder.position_at_start(bcond)
         cond = self.visit_before(node.cond, bbody)
@@ -173,6 +175,7 @@ class IRGen(ASTTransformer):
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
         self.visit_before(node.body, bend)
+        # Always branch to condition block for evaluation
         self.builder.branch(bcond)
 
         # go to the end block to emit further instructions
@@ -186,16 +189,15 @@ class IRGen(ASTTransformer):
         bend = self.add_block(prefix + '.endbody')
 
         self.builder.branch(bbody)
-        #insert into bcond block before body
+        # create and populate condition block
         self.builder.position_at_start(bcond)
         cond = self.visit_before(node.cond, bbody)
         self.builder.cbranch(cond, bbody, bend)
 
-
-
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
         self.visit_before(node.body, bend)
+        # Always branch to condition block for evaluation
         self.builder.branch(bcond)
 
         # go to the end block to emit further instructions

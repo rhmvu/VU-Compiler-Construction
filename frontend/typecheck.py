@@ -37,10 +37,6 @@ class TypeChecker(ASTVisitor):
         assert operator.is_equality()
         return [self.tbool, self.tchar, self.tint, self.tfloat]
 
-    def check_type(self, node, *expected):
-        if node.ty not in expected:
-            raise NodeError(node, 'Type mismatch: expected %s, got %s',
-                    '/'.join(map(str, expected)), node.ty)
 
     def visitGlobalDec(self, node):
         # cannot define void globals
@@ -98,7 +94,19 @@ class TypeChecker(ASTVisitor):
 
         # Variable initialization must match variable type
         self.visit_children(node)
+        # print("Checking type {} value {}".format(node._type, node.value),flush=True)
+        print(node.value.ty)
+        print(node._type)
+        print(type(node.value.ty))
+        print(type(node._type))
         self.check_type(node.value, node._type)
+
+
+    def check_type(self, node, *expected):
+        if node.ty not in expected:
+            # print(str(type(expected[0])) + "vs delivered: "+ str(type(node.ty)))
+            raise NodeError(node, 'Type mismatch: expected %s, got %s',
+                            '/'.join(map(str, expected)), node.ty)
 
     def visitArrayDef(self, node):
         # cannot define void arrays
