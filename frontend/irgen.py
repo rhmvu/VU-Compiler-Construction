@@ -221,7 +221,6 @@ class IRGen(ASTTransformer):
                 del blockname[i]
 
         for block in self.insert_blocks:
-            print(block.name)
             if block.name == endblockname:
                 self.builder.branch(block)
                 break
