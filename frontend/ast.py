@@ -129,6 +129,7 @@ class Node(object):
             setattr(self, name, value)
 
         self.location = (None, 0, 0, 0 ,0)
+        self.desugared_for = False
 
     def __str__(self):
         return repr(self)
@@ -336,6 +337,9 @@ class While(Statement):
 
     def __str__(self):
         return 'while ({0.cond}) {0.body}'.format(self)
+
+    def set_desugared_for(self):
+        self.desugared_for = True
 
 
 class DoWhile(Statement):
