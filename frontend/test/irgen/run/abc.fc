@@ -1,0 +1,7 @@
+extern int printf(char[] format, ...);
+
+int main() {
+	float i = 0.0;
+        printf("%.2f\n", -i);
+    return 0;
+}

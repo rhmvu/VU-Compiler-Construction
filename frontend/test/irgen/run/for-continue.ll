@@ -12,7 +12,7 @@ entry:
   store i32 1, i32* %i
   br label %entry.cond
 
-entry.cond:                                       ; preds = %entry.body.endif, %entry
+entry.cond:                                       ; preds = %entry.body.endif, %entry.body.if, %entry
   %i.1 = load i32, i32* %i
   %.4 = icmp slt i32 %i.1, 5
   br i1 %.4, label %entry.body, label %entry.endbody
@@ -23,9 +23,9 @@ entry.body:                                       ; preds = %entry.cond
   br i1 %.6, label %entry.body.if, label %entry.body.endif
 
 entry.body.if:                                    ; preds = %entry.body
-  br label %entry.body.endif
+  br label %entry.cond
 
-entry.body.endif:                                 ; preds = %entry.body.if, %entry.body
+entry.body.endif:                                 ; preds = %entry.body
   %.str.0 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.0, i32 0, i32 0
   %i.3 = load i32, i32* %i
   %.9 = call i32 (i8*, ...) @printf(i8* %.str.0, i32 %i.3)

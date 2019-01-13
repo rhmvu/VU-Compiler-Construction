@@ -260,9 +260,11 @@ class IRGen(ASTTransformer):
             # print(block.name)
             print(node)
             if block.name == endblockname:
-                if self.desugared_for[0]:
-                    print("DESUGARED FOR LOOP")
-                    self.builder.add(self.desugared_for[1], ast.IntConst(1))
+                # if self.desugared_for[0]:
+                #     # print("DESUGARED FOR LOOP")
+                #     #
+                #     #
+                #     # self.builder.add(self.desugared_for[1], ir.Constant(self.getty(ast.Type.get('int')), 1))
                 self.builder.branch(block)
                 # print('Implemented BRANCH')
                 break
@@ -345,7 +347,7 @@ class IRGen(ASTTransformer):
 
         if node.op == '-':
             if str(node.ty) == 'float':
-                floatconst =  ir.Constant(self.getty(node.ty), 0)
+                floatconst = ir.Constant(self.getty(node.ty), 0)
                 return self.builder.fsub(floatconst,self.visit(node.value)) 
             else:
                 return self.builder.neg(self.visit(node.value))
