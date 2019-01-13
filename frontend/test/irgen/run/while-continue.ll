@@ -26,14 +26,14 @@ entry.body:                                       ; preds = %entry.cond
   br i1 %.8, label %entry.body.if, label %entry.body.endif
 
 entry.body.if:                                    ; preds = %entry.body
-  br label %entry.endbody
+  br label %entry.body.endif
 
-entry.body.endif:                                 ; preds = %entry.body
+entry.body.endif:                                 ; preds = %entry.body.if, %entry.body
   %.str.0 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.0, i32 0, i32 0
   %i.4 = load i32, i32* %i
   %.11 = call i32 (i8*, ...) @printf(i8* %.str.0, i32 %i.4)
   br label %entry.cond
 
-entry.endbody:                                    ; preds = %entry.body.if, %entry.cond
+entry.endbody:                                    ; preds = %entry.cond
   ret i32 0
 }
