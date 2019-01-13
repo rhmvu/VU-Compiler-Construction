@@ -355,7 +355,7 @@ class For(Statement):
     types = dict(ref='str', expr1='Expression', expr2='Expression', body='Block')
 
     def __str__(self):
-        return 'for(int {0.ref} = {0.expr1} to {0.expr2}) {0.body}'.format(self)
+        return 'for (int %s = %s to %s) %s' % (self.ref, self.expr1, self.expr2, self.body)
 
 class Break(Statement):
     children = []
