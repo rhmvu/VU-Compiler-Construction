@@ -28,12 +28,14 @@ class IRGen(ASTTransformer):
         self.builder = None
         self.terminating_return = None
         self.insert_blocks = []
+        self.loop_blocks = []
         self.fns = {}
         self.vars = {}
         self.nstrings = 0
         self.zero = self.getint(0)
         self.memset = None
         self.loops = []
+        self.desugared_for = (False, None)
 
     @classmethod
     def compile(cls, module_name, program):
@@ -163,6 +165,9 @@ class IRGen(ASTTransformer):
         bcond = self.add_block(prefix + '.cond')
         bbody = self.add_block(prefix + '.body')
         bend = self.add_block(prefix + '.endbody')
+        self.loop_blocks.append(bcond)
+        self.loop_blocks.append(bend)
+        self.loop_blocks.append(bbody)
 
         #Branch to condition block
         self.builder.branch(bcond)
@@ -176,7 +181,11 @@ class IRGen(ASTTransformer):
 
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
+
+        self.desugared_for = node.desugared_for
         self.visit_before(node.body, bend)
+        self.desugared_for = (False, None)
+
         # Always branch to condition block for evaluation unless a break was initiated
         if not self.builder.block.is_terminated:
             self.builder.branch(bcond)
@@ -190,6 +199,9 @@ class IRGen(ASTTransformer):
         bcond = self.add_block(prefix + '.cond')
         bbody = self.add_block(prefix + '.body')
         bend = self.add_block(prefix + '.endbody')
+        self.loop_blocks.append(bcond)
+        self.loop_blocks.append(bend)
+        self.loop_blocks.append(bbody)
 
         self.builder.branch(bbody)
         # create and populate condition block
@@ -207,6 +219,10 @@ class IRGen(ASTTransformer):
         # go to the end block to emit further instructions
         self.builder.position_at_start(bend)
 
+
+    def visitFor(self, node):
+        raise NotImplementedError  # should be desugared
+
     def visitBreak(self, node):
         blockname = self.builder.block.name.split('.')
         endblockname = ''
@@ -220,10 +236,37 @@ class IRGen(ASTTransformer):
             else:
                 del blockname[i]
 
-        for block in self.insert_blocks:
+        for block in self.loop_blocks:
             if block.name == endblockname:
                 self.builder.branch(block)
                 break
+
+    def visitContinue(self, node):
+        blockname = self.builder.block.name.split('.')
+        endblockname = ''
+
+        for i in range(len(blockname)-1, 0, -1):
+            if blockname[i] == 'body':
+                blockname[i] = 'cond'
+                for block in blockname:
+                    endblockname += block + '.'
+                endblockname = endblockname[0:-1]
+            else:
+                del blockname[i]
+        # print(endblockname)
+        # print("BLOCKS----------")
+        for block in self.loop_blocks:
+
+            # print(block.name)
+            print(node)
+            if block.name == endblockname:
+                if self.desugared_for[0]:
+                    print("DESUGARED FOR LOOP")
+                    self.builder.add(self.desugared_for[1], ast.IntConst(1))
+                self.builder.branch(block)
+                # print('Implemented BRANCH')
+                break
+        # print("BLOCKS----------")
 
 
     def visitReturn(self, node):

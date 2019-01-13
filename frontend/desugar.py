@@ -50,7 +50,7 @@ class Desugarer(ASTTransformer):
         while_body = Block([node.body, incrementation]).at(node)
         while_condition = BinaryOp(ref, Operator("<"), node.expr2).at(node)
         while_statement = While(while_condition, while_body).at(node)
-        while_statement.set_desugared_for()
+        while_statement.set_desugared_for(ref)
         return Block([initial_assignment, while_statement]).at(node)
 
 
