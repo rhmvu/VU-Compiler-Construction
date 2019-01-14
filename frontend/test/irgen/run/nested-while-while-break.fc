@@ -1,0 +1,32 @@
+extern int printf(char[] format, ...);
+
+int main()
+{
+    int i = 0;
+    while (i < 9) {
+        i += 1;
+        //1 and 2 adn 3 only
+        do {
+            do {
+                do {
+                    printf("deepest dowhile int:%d\n", i);
+                    break;
+                    printf("WRONG: deepest dowhile int:%d\n", i);
+                } while (1==1);
+                break;
+            } while (1==1);
+            i += 1;
+            if (i < 4) {
+                continue;
+            }
+            else {
+                break;
+                printf("FAILFAILFAIL");
+            }
+        } while (1==1);
+	printf("%d\n", i);
+        if (i > 7)
+            continue;
+    }
+	return 0;
+}
