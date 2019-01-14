@@ -161,9 +161,9 @@ class IRGen(ASTTransformer):
 
     def visitWhile(self, node):
         prefix = self.builder.block.name
-        bcond = self.add_block(prefix + '.cond')
-        bbody = self.add_block(prefix + '.body')
-        bend = self.add_block(prefix + '.endbody')
+        bcond = self.add_block(prefix + '.wcond')
+        bbody = self.add_block(prefix + '.wbody')
+        bend = self.add_block(prefix + '.wendbody')
         self.loops.append((bcond, bend))
 
         #Branch to condition block
@@ -195,9 +195,9 @@ class IRGen(ASTTransformer):
 
     def visitDoWhile(self, node):
         prefix = self.builder.block.name
-        bcond = self.add_block(prefix + '.cond')
-        bbody = self.add_block(prefix + '.body')
-        bend = self.add_block(prefix + '.endbody')
+        bcond = self.add_block(prefix + '.dwcond')
+        bbody = self.add_block(prefix + '.dwbody')
+        bend = self.add_block(prefix + '.dwendbody')
         self.loops.append((bcond, bend))
 
         self.builder.branch(bbody)
@@ -222,6 +222,7 @@ class IRGen(ASTTransformer):
 
     def visitBreak(self, node):
         endblockname = self.loops[-1][1]
+        self.loops.remove(self.loops[-1])
         self.builder.branch(endblockname)
 
     def visitContinue(self, node):
