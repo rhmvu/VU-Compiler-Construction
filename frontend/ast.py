@@ -340,7 +340,6 @@ class While(Statement):
 
     def set_desugared_for(self, ref):
         self.desugared_for = (True, ref)
-        print(self.desugared_for)
 
 
 class DoWhile(Statement):

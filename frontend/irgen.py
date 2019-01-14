@@ -34,7 +34,7 @@ class IRGen(ASTTransformer):
         self.zero = self.getint(0)
         self.memset = None
         self.loops = []
-        self.desugared_for = []
+        self.desugared_for_data = []
 
     @classmethod
     def compile(cls, module_name, program):
@@ -180,10 +180,10 @@ class IRGen(ASTTransformer):
         self.builder.position_at_start(bbody)
         # store incremention variable reference in case of desugared for loop
         if node.desugared_for is not None:
-            self.desugared_for.append(node.desugared_for)
+            self.desugared_for_data.append(node.desugared_for)
         self.visit_before(node.body, bend)
         if node.desugared_for is not None:
-            self.desugared_for.remove(node.desugared_for)
+            self.desugared_for_data.remove(node.desugared_for)
 
         # Always branch to condition block for evaluation unless a break was initiated
         if not self.builder.block.is_terminated:
@@ -226,8 +226,8 @@ class IRGen(ASTTransformer):
 
     def visitContinue(self, node):
         endblockname = self.loops[-1][0]
-        if len(self.desugared_for) > 0:
-            last_iteration_variable = self.desugared_for[-1][1]
+        if len(self.desugared_for_data) > 0:
+            last_iteration_variable = self.desugared_for_data[-1][1]
             # create int 1 for addition, hardcode type
             int = ast.IntConst(1)
             int.ty = ast.Type.get("int")

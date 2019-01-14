@@ -99,7 +99,6 @@ class TypeChecker(ASTVisitor):
 
     def check_type(self, node, *expected):
         if node.ty not in expected:
-            # print(str(type(expected[0])) + "vs delivered: "+ str(type(node.ty)))
             raise NodeError(node, 'Type mismatch: expected %s, got %s',
                             '/'.join(map(str, expected)), node.ty)
 

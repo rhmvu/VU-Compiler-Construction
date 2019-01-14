@@ -190,7 +190,7 @@ class NodeError(LocationError):
     '''
     Error raised at an AST node. Displays the error message and higlights the
     accompanying source code line. Use like this:
-    >>> raise NodeError(node, 'error message')
+     raise NodeError(node, 'error message')
     '''
     def __init__(self, node, message, *args):
         super(NodeError, self).__init__(node.location, message, *args)
