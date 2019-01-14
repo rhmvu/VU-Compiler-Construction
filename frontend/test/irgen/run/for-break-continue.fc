@@ -1,0 +1,12 @@
+extern int printf(char[] format, ...);
+
+int main() {
+    for (int i = 1 to 5) {
+        if (i == 3)
+            continue;
+		else if (i == 4)
+			break;
+        printf("%d\n", i);
+    }
+    return 0;
+}
