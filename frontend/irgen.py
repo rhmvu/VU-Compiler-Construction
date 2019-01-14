@@ -28,7 +28,6 @@ class IRGen(ASTTransformer):
         self.builder = None
         self.terminating_return = None
         self.insert_blocks = []
-        self.loop_blocks = []
         self.fns = {}
         self.vars = {}
         self.nstrings = 0
@@ -165,9 +164,7 @@ class IRGen(ASTTransformer):
         bcond = self.add_block(prefix + '.cond')
         bbody = self.add_block(prefix + '.body')
         bend = self.add_block(prefix + '.endbody')
-        self.loop_blocks.append(bcond)
-        self.loop_blocks.append(bend)
-        self.loop_blocks.append(bbody)
+        self.loops.append((bcond, bend))
 
         #Branch to condition block
         self.builder.branch(bcond)
@@ -181,6 +178,7 @@ class IRGen(ASTTransformer):
 
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
+        # store incremention variable reference in case of desugared for loop
         if node.desugared_for is not None:
             self.desugared_for.append(node.desugared_for)
         self.visit_before(node.body, bend)
@@ -200,9 +198,7 @@ class IRGen(ASTTransformer):
         bcond = self.add_block(prefix + '.cond')
         bbody = self.add_block(prefix + '.body')
         bend = self.add_block(prefix + '.endbody')
-        self.loop_blocks.append(bcond)
-        self.loop_blocks.append(bend)
-        self.loop_blocks.append(bbody)
+        self.loops.append((bcond, bend))
 
         self.builder.branch(bbody)
         # create and populate condition block
@@ -225,54 +221,21 @@ class IRGen(ASTTransformer):
         raise NotImplementedError  # should be desugared
 
     def visitBreak(self, node):
-        blockname = self.builder.block.name.split('.')
-        endblockname = ''
-
-        for i in range(len(blockname)-1, 0, -1):
-            if blockname[i] == 'body':
-                blockname[i] = 'endbody'
-                for block in blockname:
-                    endblockname += block + '.'
-                endblockname = endblockname[0:-1]
-            else:
-                del blockname[i]
-
-        for block in self.loop_blocks:
-            if block.name == endblockname:
-                self.builder.branch(block)
-                break
+        endblockname = self.loops[-1][1]
+        self.builder.branch(endblockname)
 
     def visitContinue(self, node):
-        blockname = self.builder.block.name.split('.')
-        endblockname = ''
-
-        for i in range(len(blockname)-1, 0, -1):
-            if blockname[i] == 'body':
-                blockname[i] = 'cond'
-                for block in blockname:
-                    endblockname += block + '.'
-                endblockname = endblockname[0:-1]
-            else:
-                del blockname[i]
-        # print(endblockname)
-        # print("BLOCKS----------")
-        for block in self.loop_blocks:
-
-            # print(block.name)
-            print(node)
-            if block.name == endblockname:
-                if len(self.desugared_for) > 0:
-                    last_iteration_variable = self.desugared_for[-1][1]
-                    print(type(last_iteration_variable), flush=True)
-                    int = ast.IntConst(1)
-                    int.ty = ast.Type.get("int")
-                    addition_node = ast.Assignment(last_iteration_variable, ast.BinaryOp(last_iteration_variable, ast.Operator.get("+"), int))
-                    self.visitAssignment(addition_node)
-                self.builder.branch(block)
-                # print('Implemented BRANCH')
-                break
-        # print("BLOCKS----------")
-
+        endblockname = self.loops[-1][0]
+        if len(self.desugared_for) > 0:
+            last_iteration_variable = self.desugared_for[-1][1]
+            # create int 1 for addition, hardcode type
+            int = ast.IntConst(1)
+            int.ty = ast.Type.get("int")
+            # Create AST representation for incrementation
+            addition_node = ast.Assignment(last_iteration_variable, ast.BinaryOp(last_iteration_variable, ast.Operator.get("+"), int))
+            # Build LLVM code
+            self.visitAssignment(addition_node)
+        self.builder.branch(endblockname)
 
     def visitReturn(self, node):
         self.visit_children(node)
