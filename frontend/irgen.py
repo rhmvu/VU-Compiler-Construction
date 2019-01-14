@@ -35,7 +35,7 @@ class IRGen(ASTTransformer):
         self.zero = self.getint(0)
         self.memset = None
         self.loops = []
-        self.desugared_for = (False, None)
+        self.desugared_for = []
 
     @classmethod
     def compile(cls, module_name, program):
@@ -181,10 +181,11 @@ class IRGen(ASTTransformer):
 
         # insert instructions for the 'body' block before the 'end' block
         self.builder.position_at_start(bbody)
-
-        self.desugared_for = node.desugared_for
+        if node.desugared_for is not None:
+            self.desugared_for.append(node.desugared_for)
         self.visit_before(node.body, bend)
-        self.desugared_for = (False, None)
+        if node.desugared_for is not None:
+            self.desugared_for.remove(node.desugared_for)
 
         # Always branch to condition block for evaluation unless a break was initiated
         if not self.builder.block.is_terminated:
@@ -260,11 +261,13 @@ class IRGen(ASTTransformer):
             # print(block.name)
             print(node)
             if block.name == endblockname:
-                # if self.desugared_for[0]:
-                #     # print("DESUGARED FOR LOOP")
-                #     #
-                #     #
-                #     # self.builder.add(self.desugared_for[1], ir.Constant(self.getty(ast.Type.get('int')), 1))
+                if len(self.desugared_for) > 0:
+                    last_iteration_variable = self.desugared_for[-1][1]
+                    print(type(last_iteration_variable), flush=True)
+                    int = ast.IntConst(1)
+                    int.ty = ast.Type.get("int")
+                    addition_node = ast.Assignment(last_iteration_variable, ast.BinaryOp(last_iteration_variable, ast.Operator.get("+"), int))
+                    self.visitAssignment(addition_node)
                 self.builder.branch(block)
                 # print('Implemented BRANCH')
                 break

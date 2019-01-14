@@ -129,7 +129,7 @@ class Node(object):
             setattr(self, name, value)
 
         self.location = (None, 0, 0, 0 ,0)
-        self.desugared_for = (False, None)
+        self.desugared_for = None
 
     def __str__(self):
         return repr(self)
