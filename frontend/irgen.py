@@ -228,7 +228,7 @@ class IRGen(ASTTransformer):
     def visitContinue(self, node):
         endblockname = self.loops[-1][0]
         if len(self.desugared_for_data) > 0:
-            last_iteration_variable = self.desugared_for_data[-1][1]
+            last_iteration_variable = self.desugared_for_data[-1]
             # create int 1 for addition, hardcode type
             int = ast.IntConst(1)
             int.ty = ast.Type.get("int")

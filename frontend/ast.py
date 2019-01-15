@@ -339,7 +339,7 @@ class While(Statement):
         return 'while ({0.cond}) {0.body}'.format(self)
 
     def set_desugared_for(self, ref):
-        self.desugared_for = (True, ref)
+        self.desugared_for = ref
 
 
 class DoWhile(Statement):
