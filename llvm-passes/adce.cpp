@@ -36,9 +36,17 @@ bool ADCEPass::runOnFunction(Function &F) {
     for(Instruction *I : worklist){
         BasicBlock *BB = I->getParent();
         if(Reachable.find(BB) != Reachable.end()){
-            //mark instruciton operands live
+            for(Use &U : I->operands()){
+                LOG_LINE(" Operand: " << *U.get());
+                Instruction *i = dyn_cast<Instruction>(U.get());
+                if(i != nullptr && deadlist.find(i) != deadlist.end()){
+                    deadlist.erase(dyn_cast<Instruction>(i));
+                }
+            }
         }
     }
+
+
     
     for (BasicBlock *BB : Reachable) {
         for (Instruction &II : *BB) {
@@ -46,7 +54,6 @@ bool ADCEPass::runOnFunction(Function &F) {
             if(deadlist.find(I) != deadlist.end()){
                 eraselist.insert(I);
                 I->dropAllReferences();
-
             }
         }
     }
