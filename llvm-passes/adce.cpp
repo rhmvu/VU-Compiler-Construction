@@ -1,7 +1,5 @@
 /*
- * Dummy (and minimal) function pass to serve as a starting point for your
- * Assignment 2 passes. It simply visits every function and prints every call
- * instruction it finds.
+ * Initial pass to 
  */
 
 #define DEBUG_TYPE "ADCEPass"
@@ -11,7 +9,9 @@ namespace {
     class ADCEPass : public FunctionPass {
     public:
         df_iterator_default_set<BasicBlock*> Reachable;
-        std::set<Instruction*> live_instructions;
+        std::set<Instruction*> worklist;
+        std::set<Instruction*> deadlist;
+        std::set<Instruction*> eraselist;
         static char ID;
         ADCEPass() : FunctionPass(ID) {}
         virtual bool runOnFunction(Function &F) override;
@@ -19,22 +19,43 @@ namespace {
 }
 
 bool ADCEPass::runOnFunction(Function &F) {
-    LOG_LINE("Visiting function " << F.getName());
     for (BasicBlock *BB : depth_first_ext(&F, Reachable) ) {
         for (Instruction &II : *BB) {
             Instruction *I = &II;
+            //BasicBlock *bb = I->getParent();
+            //LOG_LINE(" Basic block: " << *bb);
             if(!isInstructionTriviallyDead(I)){
-                LOG_LINE(" LIVE: " << *I);
-                live_instructions.insert(I);
+                worklist.insert(I);
             } else if(I->use_empty()){
-                //remove I from BB
-                I->dropAllReferences();
+                deadlist.insert(I);
             }
         }
     }
-    
 
-    return false;  // We did not alter the IR
+    //need to add the new ops in worklist too
+    for(Instruction *I : worklist){
+        BasicBlock *BB = I->getParent();
+        if(Reachable.find(BB) != Reachable.end()){
+            //mark instruciton operands live
+        }
+    }
+    
+    for (BasicBlock *BB : Reachable) {
+        for (Instruction &II : *BB) {
+            Instruction *I = &II;
+            if(deadlist.find(I) != deadlist.end()){
+                eraselist.insert(I);
+                I->dropAllReferences();
+
+            }
+        }
+    }
+
+    for(Instruction* I : eraselist){
+        I->eraseFromParent();
+    }
+
+    return true;
 }
 
 // Register the pass with LLVM so we can invoke it with opt. The first argument
