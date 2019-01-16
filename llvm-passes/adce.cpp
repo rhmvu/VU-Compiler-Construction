@@ -1,7 +1,3 @@
-/*
- * Initial pass to 
- */
-
 #define DEBUG_TYPE "ADCEPass"
 #include "utils.h"
 
@@ -65,9 +61,5 @@ bool ADCEPass::runOnFunction(Function &F) {
     return true;
 }
 
-// Register the pass with LLVM so we can invoke it with opt. The first argument
-// to RegisterPass is the commandline switch to run this pass (e.g., opt
-// -coco-dummypass, the second argument is a description shown in the help text
-// about this pass.
 char ADCEPass::ID = 0;
 static RegisterPass<ADCEPass> X("coco-adce", "Example LLVM pass printing each function it visits, and every call instruction it finds");
