@@ -5,9 +5,9 @@ namespace {
     class ADCEPass : public FunctionPass {
     public:
         df_iterator_default_set<BasicBlock*> Reachable;
-        std::set<Instruction*> worklist;
-        std::set<Instruction*> deadlist;
+        SmallVector<Instruction*, 128> worklist;
         std::set<Instruction*> eraselist;
+        std::set<Instruction*> livelist;
         static char ID;
         ADCEPass() : FunctionPass(ID) {}
         virtual bool runOnFunction(Function &F) override;
@@ -18,48 +18,44 @@ bool ADCEPass::runOnFunction(Function &F) {
     for (BasicBlock *BB : depth_first_ext(&F, Reachable) ) {
         for (Instruction &II : *BB) {
             Instruction *I = &II;
-            //BasicBlock *bb = I->getParent();
-            //LOG_LINE(" Basic block: " << *bb);
-            if(!isInstructionTriviallyDead(I)){
-                worklist.insert(I);
+            if(I->mayHaveSideEffects() || I->isTerminator() || (isa<LoadInst>(I) && dyn_cast<LoadInst>(I)->isVolatile())|| isa<StoreInst>(I) || isa<CallInst>(I)){
+                livelist.insert(I);
+                worklist.push_back(I);
             } else if(I->use_empty()){
-                deadlist.insert(I);
+                eraselist.insert(I);
             }
         }
     }
 
-    //need to add the new ops in worklist too
-    for(Instruction *I : worklist){
-        BasicBlock *BB = I->getParent();
-        if(Reachable.find(BB) != Reachable.end()){
+    while(!worklist.empty()){
+        Instruction *I = worklist.pop_back_val();
             for(Use &U : I->operands()){
-                LOG_LINE(" Operand: " << *U.get());
-                Instruction *i = dyn_cast<Instruction>(U.get());
-                if(i != nullptr && deadlist.find(i) != deadlist.end()){
-                    deadlist.erase(dyn_cast<Instruction>(i));
+                if (Instruction *i = dyn_cast<Instruction>(U))
+                if(livelist.insert(i).second){
+                    worklist.push_back(i);
                 }
             }
-        }
     }
-
-
     
     for (BasicBlock *BB : Reachable) {
         for (Instruction &II : *BB) {
             Instruction *I = &II;
-            if(deadlist.find(I) != deadlist.end()){
+            if(!livelist.count(I)){
                 eraselist.insert(I);
-                I->dropAllReferences();
             }
         }
     }
+
+    for (Instruction *I : eraselist) {
+        I->dropAllReferences();
+    }    
 
     for(Instruction* I : eraselist){
         I->eraseFromParent();
     }
 
-    return true;
+    return false;
 }
 
 char ADCEPass::ID = 0;
-static RegisterPass<ADCEPass> X("coco-adce", "Example LLVM pass printing each function it visits, and every call instruction it finds");
+static RegisterPass<ADCEPass> X("coco-adce", "Aggressive Dead-Code Elimination");
