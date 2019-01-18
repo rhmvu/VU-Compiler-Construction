@@ -15,6 +15,7 @@ namespace {
 }
 
 bool ADCEPass::runOnFunction(Function &F) {
+    bool codeModified = false;
     for (BasicBlock *BB : depth_first_ext(&F, Reachable) ) {
         for (Instruction &II : *BB) {
             Instruction *I = &II;
@@ -26,6 +27,17 @@ bool ADCEPass::runOnFunction(Function &F) {
             }
         }
     }
+
+    for (Instruction *I : eraselist) {
+        codeModified = true;
+        I->dropAllReferences();
+    }
+
+    for(Instruction* I : eraselist){
+        I->eraseFromParent();
+    }
+
+    eraselist.clear();
 
     while(!worklist.empty()){
         Instruction *I = worklist.pop_back_val();
@@ -47,14 +59,15 @@ bool ADCEPass::runOnFunction(Function &F) {
     }
 
     for (Instruction *I : eraselist) {
+        codeModified = true;
         I->dropAllReferences();
-    }    
+    }
 
     for(Instruction* I : eraselist){
         I->eraseFromParent();
     }
 
-    return false;
+    return codeModified;
 }
 
 char ADCEPass::ID = 0;
