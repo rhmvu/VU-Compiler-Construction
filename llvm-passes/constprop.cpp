@@ -21,31 +21,33 @@ bool ConstPropPass::runOnFunction(Function &F) {
 
     SmallVector<ConstantFP*, 2> floatList;
     SmallVector<ConstantInt*, 2> intList;
+    std::map<std::string, Use*> variableMap;
     //Map for variable values we calculated/are constants
 
     for (BasicBlock &BB : F) {
         for (Instruction &II : BB) {
             Instruction *I = &II;
             if (BinaryOperator *BO = dyn_cast<BinaryOperator>(I)) {
-                LOG_LINE(" Binary op: " << *BO);
-                LOG_LINE(" Parent Name: " << I->getName());
+                LOG_LINE("Binary op: " << *BO);
+                LOG_LINE("Parent Name: " << I->getName());
                 for(Use &U : I->operands()){
 
                     //check if ConstantInt
                     if (ConstantInt *CI = dyn_cast<ConstantInt>(U)){
                         LOG_LINE("     INT CONST: " << *CI);
-                        LOG_LINE("     NAME: " << CI->getName());
                         intList.push_back(CI);
-                    }
-                    if (ConstantFP *CF = dyn_cast<ConstantFP>(U)){
+                    }else if (ConstantFP *CF = dyn_cast<ConstantFP>(U)){
                         LOG_LINE("     FP CONST: " << *CF);
-                        LOG_LINE("     NAME: " << CF->getName());
                         floatList.push_back(CF);
-                    }
-                    if (GlobalVariable *V = dyn_cast<GlobalVariable>(U)){
+                    /*} else if (CallInst *V = dyn_cast<CallInst>(U)){
                         LOG_LINE("     VAR: " << *V);
-                        LOG_LINE("     NAME: " << V->getName());
                         //if variable check if it is in the map and it already has a value, if so put this value in int or float list. so we can calculate them later
+*/
+                    } else{
+                      //LOG_LINE("     NOT recognised: " << *U);
+                      if (Instruction *V = dyn_cast<Instruction>(U)){
+                          LOG_LINE("     Parent var: " << V->getName());
+                        }
 
                     }
                 }
