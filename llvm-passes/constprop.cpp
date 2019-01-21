@@ -33,9 +33,8 @@ APInt processOperation(SmallVector<ConstantInt*, 2> intList, int op){
 }
 
 bool ConstPropPass::runOnFunction(Function &F) {
-    bool modifiedCode = false;
-
     SmallVector<ConstantInt*, 2> intList;
+    SmallVector<Instruction*, 1> varList;
     u_int opcode;
     llvm::LLVMContext &context = F.getContext();
 
@@ -48,20 +47,27 @@ bool ConstPropPass::runOnFunction(Function &F) {
                 for(Use &U : I->operands()){
                     if (ConstantInt *CI = dyn_cast<ConstantInt>(U)){
                         intList.push_back(CI);
-                    } else if (dyn_cast<Instruction>(U) != nullptr){
-
+                    } else if (Instruction *V = dyn_cast<Instruction>(U)){
+                        varList.push_back(V);
                     }
                 }
 
                 if(intList.size() == 2){
                     APInt result = processOperation(intList, opcode);
                     I->replaceAllUsesWith(ConstantInt::get(context, result));
+                } else if(intList.size() == 1){
+                    ConstantInt *constant = intList.pop_back_val();
+                    if((I->getOpcode() == ADD && constant->getValue() == 0) || 
+                    (I->getOpcode() == MUL && constant->getValue() == 1)){
+                        I->replaceAllUsesWith(varList.pop_back_val());
+                    }
                 }
                 intList.clear();
+                varList.clear();
             }
         }
     }
-    return modifiedCode;
+    return false;
 }
 
 char ConstPropPass::ID = 0;
