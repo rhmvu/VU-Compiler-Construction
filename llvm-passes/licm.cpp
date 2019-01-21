@@ -12,11 +12,29 @@ namespace {
 }
 
 void LICMPass::getAnalysisUsage(AnalysisUsage &AU) const {
-    // Tell LLVM we need some analysis info which we use for analyzing the
-    // DominatorTree.
     AU.setPreservesCFG();
     AU.addRequired<LoopInfoWrapperPass>();
     getLoopAnalysisUsage(AU);
+}
+
+bool isLoopInvariant(Instruction *I){
+    return I -> isBinaryOp() || I -> isShift() || isa<SelectInst>(I) || I -> isCast() || isa<GetElementPtrInst>(I);
+}
+
+bool dominatesExitBlocks(Instruction *I, Loop *L){
+    bool result = false;
+
+    if (isLoopInvariant(I)) {
+        for (Use &U : I->operands()) {
+            if (isa<Constant>(U) || L->hasLoopInvariantOperands(I)) {
+                result = true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    return result;
 }
 
 bool LICMPass::runOnLoop(Loop *L, LPPassManager &LPM) {
@@ -25,9 +43,18 @@ bool LICMPass::runOnLoop(Loop *L, LPPassManager &LPM) {
 
     for (BasicBlock *BB : L->blocks()) {
         if (DT->dominates(Header, BB)) {
-            LOG_LINE("The loop header dominates this Basic Block");
-        } else {
-            LOG_LINE("There is something terribly wrong with " << *BB);
+            BasicBlock::iterator it = BB->begin();
+            while (it != BB->end()){
+                Instruction *I = dyn_cast<Instruction>(it);
+                it++;
+
+                if (dominatesExitBlocks(I, L) && !(I -> mayHaveSideEffects())) {
+                    BasicBlock *pre = L->getLoopPreheader();
+                    Instruction *term = pre->getTerminator();
+                    I->moveBefore(term);
+                    I->dropUnknownNonDebugMetadata();
+                }
+            }
         }
     }
 

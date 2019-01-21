@@ -19,7 +19,7 @@ namespace {
 bool ConstPropPass::runOnFunction(Function &F) {
     bool modifiedCode = false;
 
-//    SmallVector<ConstantFP*, 2> floatList;
+    //SmallVector<ConstantFP*, 2> floatList;
     SmallVector<ConstantInt*, 2> intList;
     std::map<std::string, IntConstant*> variableMap;
     std::map<std::string, IntConstant*>::iterator variableMapIt;
