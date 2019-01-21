@@ -1,0 +1,14 @@
+
+extern int printf(char[] format, ...);
+extern int atoi(char[] nptr);
+
+int main(int argc, char[][] argv) {
+    int i = 0;
+    while (i < 5) {
+        int input = atoi(argv[2]);
+        i += 1;
+//	fgets(buffer, BUFFERSIZE , stdin)
+    }
+    return 0;
+}
+
