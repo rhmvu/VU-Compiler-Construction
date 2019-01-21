@@ -21,8 +21,8 @@ bool ConstPropPass::runOnFunction(Function &F) {
 
     //SmallVector<ConstantFP*, 2> floatList;
     SmallVector<ConstantInt*, 2> intList;
-    std::map<std::string, IntConstant*> variableMap;
-    std::map<std::string, IntConstant*>::iterator variableMapIt;
+    std::map<std::string, ConstantInt*> variableMap;
+    std::map<std::string, ConstantInt*>::iterator variableMapIt;
     //Map for variable values we calculated/are constants
     std::string opCodeName;
 
@@ -44,7 +44,7 @@ bool ConstPropPass::runOnFunction(Function &F) {
 
                             variableMapIt = variableMap.find(V->getName());
                             if(variableMapIt != variableMap.end()) {
-                                IntConstant* intVar = variableMapIt->second;
+                                ConstantInt* intVar = variableMapIt->second;
                                 intList.push_back(intVar);
                             }
                         }
@@ -66,14 +66,14 @@ bool ConstPropPass::runOnFunction(Function &F) {
 
                     //ConstantInt* resultInt = ConstantInt.get(IntegerType.get(nullptr,64),result,true);
 //                    Use *resultUse = dyn_cast<Use>(resultFP);
-                    ConstantInt* resultInt = variableMapIt->second;
-                    APint = resultInt.getValue();
+                    //ConstantInt* resultInt = variableMapIt->second;
+                    //APint = resultInt.getValue();
                     for(ConstantInt* ptr : intList){
                         LOG_LINE(*ptr);
                     }
                 }
                 intList.clear();
-                floatList.clear();
+                //floatList.clear();
             }
         }
     }
