@@ -1,11 +1,11 @@
-/*
- * Dummy (and minimal) function pass to serve as a starting point for your
- * Assignment 2 passes. It simply visits every function and prints every call
- * instruction it finds.
- */
-
 #define DEBUG_TYPE "ConstPropPass"
 #include "utils.h"
+
+#define ADD 11
+#define SUB 13
+#define MUL 15
+#define ASHR 25
+#define SHL 23
 
 namespace {
     class ConstPropPass : public FunctionPass {
@@ -16,76 +16,53 @@ namespace {
     };
 }
 
+APInt processOperation(SmallVector<ConstantInt*, 2> intList, int op){
+    APInt result, 
+        op1 = intList.pop_back_val()->getValue(), 
+        op2 = intList.pop_back_val()->getValue();
+
+    switch(op){
+        case ADD: result = op1 + op2; break;
+        case MUL: result = op1 * op2; break;
+        case SUB: result = op1 - op2; break;
+        case ASHR: result = op2.ashr(op1) ; break;
+        case SHL: result = op2 << op1; break;
+    }
+
+    return result;
+}
+
 bool ConstPropPass::runOnFunction(Function &F) {
     bool modifiedCode = false;
 
-    //SmallVector<ConstantFP*, 2> floatList;
     SmallVector<ConstantInt*, 2> intList;
-    std::map<std::string, ConstantInt*> variableMap;
-    std::map<std::string, ConstantInt*>::iterator variableMapIt;
-    //Map for variable values we calculated/are constants
-    std::string opCodeName;
+    u_int opcode;
+    llvm::LLVMContext &context = F.getContext();
 
     for (BasicBlock &BB : F) {
         for (Instruction &II : BB) {
             Instruction *I = &II;
-            if (BinaryOperator *BO = dyn_cast<BinaryOperator>(I)) {
-                LOG_LINE("Binary op: " << *BO);
-                opCodeName = I->getOpcodeName();
-                LOG_LINE("Parent Name: " << I->getName());
+            if (dyn_cast<BinaryOperator>(I) != nullptr) {
+                opcode = I->getOpcode();
+                std::string parent = "";
                 for(Use &U : I->operands()){
-                    //check if ConstantInt
                     if (ConstantInt *CI = dyn_cast<ConstantInt>(U)){
-                        LOG_LINE("     INT CONST: " << *CI);
                         intList.push_back(CI);
-                    } else {
-                        if (Instruction *V = dyn_cast<Instruction>(U)){
-                            LOG_LINE("     Parent var: " << V->getName());
-
-                            variableMapIt = variableMap.find(V->getName());
-                            if(variableMapIt != variableMap.end()) {
-                                ConstantInt* intVar = variableMapIt->second;
-                                intList.push_back(intVar);
-                            }
-                        }
+                    } else if (dyn_cast<Instruction>(U) != nullptr){
 
                     }
                 }
-                //if 2 operands and we can do calculation, then save the outcome in the variable map
+
                 if(intList.size() == 2){
-                    LOG_LINE(opCodeName);
-
-//                    switch(opCodeName){
-//                        case "add": result = processAdd(intlist); break;
-//                        case "mul": result = processMul(intlist); break;
-//                        case "sub": result = processSub(intlist); break;
-//                        //case "div": result = processDiv(intlist); break;
-//                        case "ashr": result = processshift(intlist); break;
-//                        default: LOG_LINE("ERRORROROROROROR, opcode unknown: "<< opCodeName); break;
-//                    }
-
-                    //ConstantInt* resultInt = ConstantInt.get(IntegerType.get(nullptr,64),result,true);
-//                    Use *resultUse = dyn_cast<Use>(resultFP);
-                    //ConstantInt* resultInt = variableMapIt->second;
-                    //APint = resultInt.getValue();
-                    for(ConstantInt* ptr : intList){
-                        LOG_LINE(*ptr);
-                    }
+                    APInt result = processOperation(intList, opcode);
+                    I->replaceAllUsesWith(ConstantInt::get(context, result));
                 }
                 intList.clear();
-                //floatList.clear();
             }
         }
     }
-
-
-
     return modifiedCode;
 }
 
-// Register the pass with LLVM so we can invoke it with opt. The first argument
-// to RegisterPass is the commandline switch to run this pass (e.g., opt
-// -coco-dummypass, the second argument is a description shown in the help text
-// about this pass.
 char ConstPropPass::ID = 0;
 static RegisterPass<ConstPropPass> X("coco-constprop", "LLVM pass propagating constants");
