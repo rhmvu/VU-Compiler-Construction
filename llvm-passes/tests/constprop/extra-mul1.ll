@@ -26,6 +26,10 @@ entry.wbody:
   store i32 %".9", i32* %"input"
   %"i.2" = load i32, i32* %"i"
   %".11" = add i32 %"i.2", 1
+  ; CHECK: %".11" = add i32 %"i.2", 1
+  %q = mul i32 1, %".11"
+  %z = add i32 0, %q
+  ; CHECK: %z = add i32, %".11"
   store i32 %".11", i32* %"i"
   br label %"entry.wcond"
 entry.wendbody:

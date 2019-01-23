@@ -14,6 +14,7 @@ entry.while.body:                                 ; preds = %entry.while.cond
   %y = add i32 0, %x
   %z = mul i32 1, %y
   %q = sub i32 %z, 0
+  ; CHECK: %q = sub i32 4, 0
   br label %entry.while.cond
 
 entry.endwhile:                                   ; preds = %entry.while.cond
