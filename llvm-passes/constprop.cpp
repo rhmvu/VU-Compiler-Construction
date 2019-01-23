@@ -42,17 +42,20 @@ bool ConstPropPass::runOnFunction(Function &F) {
         for (Instruction &II : BB) {
             Instruction *I = &II;
             bool isFirst = false;
+            int c = 0;
             if (dyn_cast<BinaryOperator>(I) != nullptr) {
                 opcode = I->getOpcode();
                 std::string parent = "";
                 for(Use &U : I->operands()){
                     if (ConstantInt *CI = dyn_cast<ConstantInt>(U)){
                         intList.push_back(CI);
-                        if (!isFirst)
+                        if (c == 0){
                             isFirst = true;
+                        }
                     } else if (Instruction *V = dyn_cast<Instruction>(U)){
                         varList.push_back(V);
                     }
+                    c++;
                 }
 
                 if(intList.size() == 2){

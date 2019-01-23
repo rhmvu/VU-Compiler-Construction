@@ -25,16 +25,20 @@ entry.wbody:
   %".9" = call i32 @"atoi"(i8* %"argv.idx")
   store i32 %".9", i32* %"input"
   %"i.2" = load i32, i32* %"i"
-  ; CHECK: %".11" = add i32 %"i.2", 1
+  ; CHECK: %.11 = add i32 %i.2, 1
   %".11" = add i32 %"i.2", 1
   %q = mul i32 1, %".11"
-  ; CHECK: %z = add i32, %".11"  
   %z = add i32 0, %q
+  ; CHECK: %z = add i32 0, %.11
+  %p = sub i32 %q, 0
+  %n = add i32 2, %p
+  ; CHECK: %n = add i32 2, %.11
+  %m = sub i32 0, %n
+  %o = mul i32 1, %m
+  ; CHECK: %o = mul i32 1, %m
   
   store i32 %".11", i32* %"i"
   br label %"entry.wcond"
 entry.wendbody:
   ret i32 0
 }
-
-
