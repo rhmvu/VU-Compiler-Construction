@@ -16,7 +16,7 @@ namespace {
     };
 }
 
-APInt processOperation(SmallVector<ConstantInt*, 2> intList, int op){
+APInt processOperation(SmallVector<ConstantInt*, 1> intList, int op){
     APInt result, 
         op1 = intList.pop_back_val()->getValue(), 
         op2 = intList.pop_back_val()->getValue();
@@ -33,7 +33,7 @@ APInt processOperation(SmallVector<ConstantInt*, 2> intList, int op){
 }
 
 bool ConstPropPass::runOnFunction(Function &F) {
-    SmallVector<ConstantInt*, 2> intList;
+    SmallVector<ConstantInt*, 1> intList;
     SmallVector<Instruction*, 1> varList;
     u_int opcode;
     llvm::LLVMContext &context = F.getContext();
