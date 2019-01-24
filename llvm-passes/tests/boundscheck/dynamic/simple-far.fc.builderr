@@ -1,0 +1,5 @@
+usage: main.py [-h] [--no-cpp] [-v] [-o FILE] [--emit-bc]
+               [-d {preprocess,parser,desugar,context,typecheck,irgen}]
+               [-I PATH]
+               [infile]
+main.py: error: unrecognized arguments: Year/Compiler Construction/assignments/framework/VU-Compiler-Construction/llvm-passes/tests/../../runtime/
