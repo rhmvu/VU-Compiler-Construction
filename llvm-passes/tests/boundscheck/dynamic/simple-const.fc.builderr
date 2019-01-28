@@ -1,5 +1,14 @@
-usage: main.py [-h] [--no-cpp] [-v] [-o FILE] [--emit-bc]
-               [-d {preprocess,parser,desugar,context,typecheck,irgen}]
-               [-I PATH]
-               [infile]
-main.py: error: unrecognized arguments: Year/Compiler Construction/assignments/framework/VU-Compiler-Construction/llvm-passes/tests/../../runtime/
+[BoundsCheckerPass] Visiting function main
+[BoundsCheckerPass] baseptr: @.str.0 = unnamed_addr constant [4 x i8] c"foo\00"
+[BoundsCheckerPass] RESULT:  i32 0
+[BoundsCheckerPass] NOT STATIC RESULT
+[BoundsCheckerPass] baseptr: @.str.1 = unnamed_addr constant [4 x i8] c"YES\00"
+[BoundsCheckerPass] RESULT:  i32 0
+[BoundsCheckerPass] baseptr: @.str.2 = unnamed_addr constant [4 x i8] c"foo\00"
+[BoundsCheckerPass] RESULT:  i32 0
+[BoundsCheckerPass]   GEP   %.str.2 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.2, i32 0, i32 0
+[BoundsCheckerPass]       INSIDE GEP ADDED 0
+[BoundsCheckerPass] baseptr:   %.str.2 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.2, i32 0, i32 0
+[BoundsCheckerPass] RESULT:  i32 4
+[BoundsCheckerPass] baseptr: @.str.3 = unnamed_addr constant [3 x i8] c"NO\00"
+[BoundsCheckerPass] RESULT:  i32 0

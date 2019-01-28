@@ -3,17 +3,17 @@
 
 namespace
 {
-class BoundsCheckerPass : public ModulePass
-{
-  public:
-    static char ID;
-    BoundsCheckerPass() : ModulePass(ID) {}
-    virtual bool runOnModule(Module &M) override;
+    class BoundsCheckerPass : public ModulePass
+    {
+    public:
+        static char ID;
+        BoundsCheckerPass() : ModulePass(ID) {}
+        virtual bool runOnModule(Module &M) override;
 
-  private:
-    Function *PrintAllocFunc;
-    bool instrumentAllocations(Function &F);
-};
+    private:
+        Function *PrintAllocFunc;
+        bool instrumentAllocations(Function &F);
+    };
 } // namespace
 
 /*
@@ -89,8 +89,8 @@ bool BoundsCheckerPass::runOnModule(Module &M)
     Type *Int32Ty = Type::getInt32Ty(C);
     //   void @__coco_dummy_print_allocation(i32 %elems)
     PrintAllocFunc =
-        cast<Function>(M.getOrInsertFunction("__coco_boundscheck_print_allocation",
-                                             VoidTy, Int32Ty));
+            cast<Function>(M.getOrInsertFunction("__coco_boundscheck_print_allocation",
+                                                 VoidTy, Int32Ty));
 
     // LLVM wants to know whether we made any modifications to the IR, so we
     // keep track of this.
@@ -121,6 +121,7 @@ bool BoundsCheckerPass::runOnModule(Module &M)
                     else
                     {
                         // static check
+                        LOG_LINE("baseptr: " << *dyn_cast<GetElementPtrInst>(I)->getOperand(0));
                         LOG_LINE("RESULT:  " << *result);
                     }
                 }

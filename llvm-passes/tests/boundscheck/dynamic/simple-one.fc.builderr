@@ -1,5 +1,13 @@
-usage: main.py [-h] [--no-cpp] [-v] [-o FILE] [--emit-bc]
-               [-d {preprocess,parser,desugar,context,typecheck,irgen}]
-               [-I PATH]
-               [infile]
-main.py: error: unrecognized arguments: Year/Compiler Construction/assignments/framework/VU-Compiler-Construction/llvm-passes/tests/../../runtime/
+[BoundsCheckerPass] Visiting function main
+[BoundsCheckerPass] NOT STATIC RESULT
+[BoundsCheckerPass] baseptr:   %a = alloca i32, i32 100
+[BoundsCheckerPass] RESULT:  i32 0
+[BoundsCheckerPass] baseptr: @.str.0 = unnamed_addr constant [4 x i8] c"YES\00"
+[BoundsCheckerPass] RESULT:  i32 0
+[BoundsCheckerPass] baseptr:   %a = alloca i32, i32 100
+[BoundsCheckerPass] RESULT:  i32 100
+[BoundsCheckerPass] baseptr: @.str.1 = unnamed_addr constant [3 x i8] c"NO\00"
+[BoundsCheckerPass] RESULT:  i32 0
+simple-one.fc.obj: In function `main':
+llvm-link:(.text+0xe): undefined reference to `__coco_boundscheck_print_allocation'
+clang-5.0: error: linker command failed with exit code 1 (use -v to see invocation)
