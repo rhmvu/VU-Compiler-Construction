@@ -2,22 +2,22 @@ opt: /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/ilist_iterator.h:14
 #0 0x0000000001e5563a llvm::sys::PrintStackTrace(llvm::raw_ostream&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e5563a)
 #1 0x0000000001e533ae llvm::sys::RunSignalHandlers() (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e533ae)
 #2 0x0000000001e53522 SignalHandler(int) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e53522)
-#3 0x00007f386d0f0890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
-#4 0x00007f386bda1e97 gsignal /build/glibc-OTsEL5/glibc-2.27/signal/../sysdeps/unix/sysv/linux/raise.c:51:0
-#5 0x00007f386bda3801 abort /build/glibc-OTsEL5/glibc-2.27/stdlib/abort.c:81:0
-#6 0x00007f386bd9339a __assert_fail_base /build/glibc-OTsEL5/glibc-2.27/assert/assert.c:89:0
-#7 0x00007f386bd93412 (/lib/x86_64-linux-gnu/libc.so.6+0x30412)
-#8 0x00007f386bb3ade1 llvm::ilist_iterator<llvm::ilist_detail::node_options<llvm::BasicBlock, true, false, void>, false, false>::operator*() const /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/ilist_iterator.h:141:0
-#9 0x00007f386bb437f9 llvm::simple_ilist<llvm::BasicBlock>::front() /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/simple_ilist.h:139:0
-#10 0x00007f386bb42a00 llvm::Function::front() /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Function.h:588:0
-#11 0x00007f386bb429e2 llvm::Function::getEntryBlock() /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Function.h:565:0
-#12 0x00007f386bb459e6 (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/boundschecker.cpp:102:0
+#3 0x00007fd9c8f77890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
+#4 0x00007fd9c7c28e97 gsignal /build/glibc-OTsEL5/glibc-2.27/signal/../sysdeps/unix/sysv/linux/raise.c:51:0
+#5 0x00007fd9c7c2a801 abort /build/glibc-OTsEL5/glibc-2.27/stdlib/abort.c:81:0
+#6 0x00007fd9c7c1a39a __assert_fail_base /build/glibc-OTsEL5/glibc-2.27/assert/assert.c:89:0
+#7 0x00007fd9c7c1a412 (/lib/x86_64-linux-gnu/libc.so.6+0x30412)
+#8 0x00007fd9c79c1de1 llvm::ilist_iterator<llvm::ilist_detail::node_options<llvm::BasicBlock, true, false, void>, false, false>::operator*() const /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/ilist_iterator.h:141:0
+#9 0x00007fd9c79ca7f9 llvm::simple_ilist<llvm::BasicBlock>::front() /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/simple_ilist.h:139:0
+#10 0x00007fd9c79c9a00 llvm::Function::front() /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Function.h:588:0
+#11 0x00007fd9c79c99e2 llvm::Function::getEntryBlock() /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Function.h:565:0
+#12 0x00007fd9c79cc9e6 (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/boundschecker.cpp:102:0
 #13 0x00000000019470ed llvm::legacy::PassManagerImpl::run(llvm::Module&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x19470ed)
 #14 0x00000000006db61c main (/home/ruben/Workspace/coco/lib/install/bin/opt+0x6db61c)
-#15 0x00007f386bd84b97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
+#15 0x00007fd9c7c0bb97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
 #16 0x00000000007475b9 _start (/home/ruben/Workspace/coco/lib/install/bin/opt+0x7475b9)
 Stack dump:
 0.	Program arguments: /home/ruben/Workspace/coco/lib/install/bin/opt -load /home/ruben/Workspace/coco/llvm-passes/obj/libllvm-passes.so -S -alloca-hoisting -mem2reg -coco-boundscheck -o simple-one.fc.optout 
 1.	Running pass 'Example LLVM module pass that inserts prints for every allocation.' on module '<stdin>'.
-../inc.sh: line 57: 28400 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
-     28401 Aborted                 (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"
+../inc.sh: line 57: 30444 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
+     30445 Aborted                 (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"

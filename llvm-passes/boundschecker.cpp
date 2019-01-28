@@ -65,17 +65,34 @@ Value *accumulatedOffsets(GetElementPtrInst *gep, IRBuilder<> builder)
     }
 }
 
-Value *getBasePointer(GetElementPtrInst *GEP, IRBuilder<> builder)
+Value *getBasePointer(GetElementPtrInst *gep)
 {
 
-    GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(GEP->getOperand(0));
+    GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(gep->getOperand(0));
     if (operand1 == nullptr)
     {
-        return GEP->getOperand(0);
+        return gep->getOperand(0);
     }
     else
     {
-        return getBasePointer(operand1, builder);
+        return getBasePointer(operand1);
+    }
+}
+
+Value* getArraySize(GetElementPtrInst *gep){
+    Value* basePointer = getBasePointer(gep);
+    if(AllocaInst *alloca = dyn_cast<AllocaInst>(basePointer)){
+        return alloca->getOperand(0);
+    }else {//if(Argument *arg = dyn_cast<Argument>(basePointer)){
+        LOG_LINE("NOT AN ALLOCA, FAILING NOW");
+        Constant *cons = dyn_cast<Constant>(basePointer);
+        Type *type = cons->getType();
+        /*PointerType *ptrType = PointerType::get(type,0);
+        ArrayType *arrType = ptrType->getArrayElementType();
+        uint64_t arraySize = arrType->getArrayNumElements();
+        */
+       LOG_LINE("arraysize is probably not: " << type->getArrayNumElements());
+       return basePointer; //should return actual value here
     }
 }
 
@@ -116,8 +133,12 @@ bool BoundsCheckerPass::runOnModule(Module &M)
             {
                 GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
                 builder.SetInsertPoint(I);
-                CallInst *call = builder.CreateCall(PrintAllocFunc, {accumulatedOffsets(G, builder), getBasePointer(G, builder)});
-                builder.Insert(call);
+                Value* offset = accumulatedOffsets(G,builder);
+                LOG_LINE("offsets = " << *offset);
+                Value* arraySize = getArraySize(G);
+                LOG_LINE("arraysize = " << *arraySize);
+                //CallInst *call = builder.CreateCall(PrintAllocFunc, {offset, arraySize});
+                //builder.Insert(call);
             }
         }
 
