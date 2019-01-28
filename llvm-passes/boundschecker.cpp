@@ -69,7 +69,8 @@ Value *accumulatedOffsets(Instruction *startGEP, Function &F)
             }
             else
             {
-                return nullptr;
+                return loopOverVarUse(GEP->getOperand(1));
+                //return nullptr;
             }
         }
         GEP = dyn_cast<GetElementPtrInst>(GEP->getOperand(0));
@@ -77,6 +78,20 @@ Value *accumulatedOffsets(Instruction *startGEP, Function &F)
 
     return ConstantInt::get(F.getContext(), result);
 }
+
+
+Value * loopOverVarUse(Value* startPointer){
+    
+}
+/*
+Value* val = cast<Value>(alloca_x);
+Value::use_iterator sUse = val->use_begin();
+Value::use_iterator sEnd = val->use_end();
+for (; sUse != sEnd; ++sUse) {
+    if(isa<LoadInst>(sUse)) // load inst
+    else if(isa<StoreInst>(sUse)) // store inst
+}
+*/
 
 bool BoundsCheckerPass::runOnModule(Module &M)
 {
