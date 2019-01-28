@@ -13,6 +13,8 @@ class BoundsCheckerPass : public ModulePass
   private:
     Function *PrintAllocFunc;
     bool instrumentAllocations(Function &F);
+    // Value *accumulatedOffsets(GetElementPtrInst *gep, IRBuilder<> builder);
+    // Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
 };
 } // namespace
 
@@ -47,29 +49,25 @@ bool BoundsCheckerPass::instrumentAllocations(Function &F)
     return Changed;
 }
 
-
-Value *accumulatedOffsets(Value *Val, IRBuilder<> builder)
+Value *accumulatedOffsets(GetElementPtrInst *gep, IRBuilder<> builder)
 {
-    GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(Val);
-    Value * operand2;
-    if (GEP->getOperand(1) != nullptr) {
-         operand2 = dyn_cast<Value>(GEP->getOperand(1));    
-    }else{
-        return nullptr;
-    }
+    // GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(gep);
+    GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(gep->getOperand(0));
+    Value *operand2 = gep->getOperand(1);
 
-    
-    Value *result = accumulatedOffsets(operand2, builder);
-    if (result == nullptr)
+    if (operand1 == nullptr)
     {
-        return (operand2);
+        return operand2;
     }
-    return builder.CreateAdd(operand2, accumulatedOffsets(operand2, builder));
+    else
+    {
+        return builder.CreateAdd(operand2, accumulatedOffsets(operand1, builder));
+    }
 }
 
-Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
+Value *getBasePointer(GetElementPtrInst *GEP, IRBuilder<> builder)
 {
-    
+
     GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(GEP->getOperand(0));
     if (operand1 == nullptr)
     {
@@ -81,54 +79,53 @@ Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
     }
 }
 
+bool BoundsCheckerPass::runOnModule(Module &M)
+{
+    // Retrieve a pointer to the helper function. The instrumentAllocations
+    // function will insert calls to this function for every allocation. This
+    // function is written in our runtime (runtime/dummy.c). To see its (LLVM)
+    // type, you can check runtime/obj/dummy.ll)
+    LLVMContext &C = M.getContext();
+    Type *VoidTy = Type::getVoidTy(C);
+    Type *Int32Ty = Type::getInt32Ty(C);
+    //   void @__coco_dummy_print_allocation(i32 %elems)
+    PrintAllocFunc =
+        cast<Function>(M.getOrInsertFunction("__coco_boundscheck_print_allocation",
+                                             VoidTy, Int32Ty));
 
+    // LLVM wants to know whether we made any modifications to the IR, so we
+    // keep track of this.
+    bool Changed = false;
 
-    bool BoundsCheckerPass::runOnModule(Module & M)
+    for (Function &F : M)
     {
-        // Retrieve a pointer to the helper function. The instrumentAllocations
-        // function will insert calls to this function for every allocation. This
-        // function is written in our runtime (runtime/dummy.c). To see its (LLVM)
-        // type, you can check runtime/obj/dummy.ll)
-        LLVMContext &C = M.getContext();
-        Type *VoidTy = Type::getVoidTy(C);
-        Type *Int32Ty = Type::getInt32Ty(C);
-        //   void @__coco_dummy_print_allocation(i32 %elems)
-        PrintAllocFunc =
-            cast<Function>(M.getOrInsertFunction("__coco_boundscheck_print_allocation",
-                                                 VoidTy, Int32Ty));
+        IRBuilder<> builder(&F.getEntryBlock()); //probably not get entry block
+        // We want to skip instrumenting certain functions, like declarations
+        // and helper functions (e.g., our dummy_print_allocation)
+        if (!shouldInstrument(&F))
+            continue;
 
-        // LLVM wants to know whether we made any modifications to the IR, so we
-        // keep track of this.
-        bool Changed = false;
+        LOG_LINE("Visiting function " << F.getName());
 
-        for (Function &F : M)
+        for (Instruction &II : instructions(F))
         {
-            IRBuilder<> builder(&F.getEntryBlock()); //probably not get entry block
-            // We want to skip instrumenting certain functions, like declarations
-            // and helper functions (e.g., our dummy_print_allocation)
-            if (!shouldInstrument(&F))
-                continue;
-
-            LOG_LINE("Visiting function " << F.getName());
-        
-                for (Instruction &II :instructions(F))
-                {
-                    Instruction *I = &II;
-                    //if it is a GEP and it has an index in addition to the base pointer, we process
-                    if (isa<GetElementPtrInst>(I) &&
-                        dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
-                    {
-                        //CallInst *call =
-                        builder.CreateCall(PrintAllocFunc, {accumulatedOffsets(I,builder), getBasePointer(I,builder)});
-                        //builder.Insert(call);
-                    }
-                }
-            
-            Changed |= instrumentAllocations(F);
+            Instruction *I = &II;
+            //if it is a GEP and it has an index in addition to the base pointer, we process
+            if (isa<GetElementPtrInst>(I) &&
+                dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
+            {
+                GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
+                builder.SetInsertPoint(I);
+                CallInst *call = builder.CreateCall(PrintAllocFunc, {accumulatedOffsets(G, builder), getBasePointer(G, builder)});
+                builder.Insert(call);
+            }
         }
 
-        return Changed;
+        Changed |= instrumentAllocations(F);
     }
 
-    char BoundsCheckerPass::ID = 0;
-    static RegisterPass<BoundsCheckerPass> X("coco-boundscheck", "Example LLVM module pass that inserts prints for every allocation.");
+    return Changed;
+}
+
+char BoundsCheckerPass::ID = 0;
+static RegisterPass<BoundsCheckerPass> X("coco-boundscheck", "Example LLVM module pass that inserts prints for every allocation.");
