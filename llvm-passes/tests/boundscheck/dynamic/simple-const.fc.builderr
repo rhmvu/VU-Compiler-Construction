@@ -1,21 +1,23 @@
-[BoundsCheckerPass] Visiting function main
-opt: /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Instructions.h:1098: llvm::Value* llvm::GetElementPtrInst::getOperand(unsigned int) const: Assertion `i_nocapture < OperandTraits<GetElementPtrInst>::operands(this) && "getOperand() out of range!"' failed.
+opt: /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/ilist_iterator.h:140: llvm::ilist_iterator<OptionsT, IsReverse, IsConst>::reference llvm::ilist_iterator<OptionsT, IsReverse, IsConst>::operator*() const [with OptionsT = llvm::ilist_detail::node_options<llvm::BasicBlock, true, false, void>; bool IsReverse = false; bool IsConst = false; llvm::ilist_iterator<OptionsT, IsReverse, IsConst>::reference = llvm::BasicBlock&]: Assertion `!NodePtr->isKnownSentinel()' failed.
 #0 0x0000000001e5563a llvm::sys::PrintStackTrace(llvm::raw_ostream&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e5563a)
 #1 0x0000000001e533ae llvm::sys::RunSignalHandlers() (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e533ae)
 #2 0x0000000001e53522 SignalHandler(int) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e53522)
-#3 0x00007f58f90da890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
-#4 0x00007f58f7d8be97 gsignal /build/glibc-OTsEL5/glibc-2.27/signal/../sysdeps/unix/sysv/linux/raise.c:51:0
-#5 0x00007f58f7d8d801 abort /build/glibc-OTsEL5/glibc-2.27/stdlib/abort.c:81:0
-#6 0x00007f58f7d7d39a __assert_fail_base /build/glibc-OTsEL5/glibc-2.27/assert/assert.c:89:0
-#7 0x00007f58f7d7d412 (/lib/x86_64-linux-gnu/libc.so.6+0x30412)
-#8 0x00007f58f7b2f391 llvm::GetElementPtrInst::getOperand(unsigned int) const /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Instructions.h:1098:0
-#9 0x00007f58f7b2fc45 (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/boundschecker.cpp:119:0
-#10 0x00000000019470ed llvm::legacy::PassManagerImpl::run(llvm::Module&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x19470ed)
-#11 0x00000000006db61c main (/home/ruben/Workspace/coco/lib/install/bin/opt+0x6db61c)
-#12 0x00007f58f7d6eb97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
-#13 0x00000000007475b9 _start (/home/ruben/Workspace/coco/lib/install/bin/opt+0x7475b9)
+#3 0x00007f0d84436890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
+#4 0x00007f0d830e7e97 gsignal /build/glibc-OTsEL5/glibc-2.27/signal/../sysdeps/unix/sysv/linux/raise.c:51:0
+#5 0x00007f0d830e9801 abort /build/glibc-OTsEL5/glibc-2.27/stdlib/abort.c:81:0
+#6 0x00007f0d830d939a __assert_fail_base /build/glibc-OTsEL5/glibc-2.27/assert/assert.c:89:0
+#7 0x00007f0d830d9412 (/lib/x86_64-linux-gnu/libc.so.6+0x30412)
+#8 0x00007f0d82e80dd1 llvm::ilist_iterator<llvm::ilist_detail::node_options<llvm::BasicBlock, true, false, void>, false, false>::operator*() const /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/ilist_iterator.h:141:0
+#9 0x00007f0d82e897e9 llvm::simple_ilist<llvm::BasicBlock>::front() /home/ruben/Workspace/coco/lib/install/include/llvm/ADT/simple_ilist.h:139:0
+#10 0x00007f0d82e889f0 llvm::Function::front() /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Function.h:588:0
+#11 0x00007f0d82e889d2 llvm::Function::getEntryBlock() /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Function.h:565:0
+#12 0x00007f0d82e8bab8 (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/boundschecker.cpp:106:0
+#13 0x00000000019470ed llvm::legacy::PassManagerImpl::run(llvm::Module&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x19470ed)
+#14 0x00000000006db61c main (/home/ruben/Workspace/coco/lib/install/bin/opt+0x6db61c)
+#15 0x00007f0d830cab97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
+#16 0x00000000007475b9 _start (/home/ruben/Workspace/coco/lib/install/bin/opt+0x7475b9)
 Stack dump:
 0.	Program arguments: /home/ruben/Workspace/coco/lib/install/bin/opt -load /home/ruben/Workspace/coco/llvm-passes/obj/libllvm-passes.so -S -alloca-hoisting -mem2reg -coco-boundscheck -o simple-const.fc.optout 
 1.	Running pass 'Example LLVM module pass that inserts prints for every allocation.' on module '<stdin>'.
-../inc.sh: line 57: 11169 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
-     11170 Aborted                 (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"
+../inc.sh: line 57: 18759 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
+     18760 Aborted                 (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"

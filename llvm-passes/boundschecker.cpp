@@ -69,10 +69,11 @@ Value *accumulatedOffsets(Value *Val, IRBuilder<> builder)
 
 Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
 {
-    GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(GEP->getOperand(1));
+    
+    GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(GEP->getOperand(0));
     if (operand1 == nullptr)
     {
-        return dyn_cast<Value>(operand1);
+        return GEP->getOperand(0);
     }
     else
     {
@@ -102,29 +103,27 @@ Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
 
         for (Function &F : M)
         {
+            IRBuilder<> builder(&F.getEntryBlock()); //probably not get entry block
             // We want to skip instrumenting certain functions, like declarations
             // and helper functions (e.g., our dummy_print_allocation)
             if (!shouldInstrument(&F))
                 continue;
 
             LOG_LINE("Visiting function " << F.getName());
-
-            for (BasicBlock &BB : F)
-            {
-                for (Instruction &II : BB)
+        
+                for (Instruction &II :instructions(F))
                 {
                     Instruction *I = &II;
                     //if it is a GEP and it has an index in addition to the base pointer, we process
                     if (isa<GetElementPtrInst>(I) &&
-                        dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr &&
-                        dyn_cast<GetElementPtrInst>(I)->getOperand(2) == nullptr)
+                        dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
                     {
-                        IRBuilder<> builder(&F.getEntryBlock()); //probably not get entry block
-                        CallInst *call = builder.CreateCall(PrintAllocFunc, {accumulatedOffsets(I,builder), getBasePointer(I,builder)});
-                        builder.Insert(call);
+                        //CallInst *call =
+                        builder.CreateCall(PrintAllocFunc, {accumulatedOffsets(I,builder), getBasePointer(I,builder)});
+                        //builder.Insert(call);
                     }
                 }
-            }
+            
             Changed |= instrumentAllocations(F);
         }
 
