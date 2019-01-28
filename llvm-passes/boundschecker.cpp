@@ -3,17 +3,17 @@
 
 namespace
 {
-    class BoundsCheckerPass : public ModulePass
-    {
-    public:
-        static char ID;
-        BoundsCheckerPass() : ModulePass(ID) {}
-        virtual bool runOnModule(Module &M) override;
+class BoundsCheckerPass : public ModulePass
+{
+  public:
+    static char ID;
+    BoundsCheckerPass() : ModulePass(ID) {}
+    virtual bool runOnModule(Module &M) override;
 
-    private:
-        Function *PrintAllocFunc;
-        bool instrumentAllocations(Function &F);
-    };
+  private:
+    Function *PrintAllocFunc;
+    bool instrumentAllocations(Function &F);
+};
 } // namespace
 
 /*
@@ -47,106 +47,89 @@ bool BoundsCheckerPass::instrumentAllocations(Function &F)
     return Changed;
 }
 
-Value *accumulatedOffsets(Instruction *startGEP, Function &F)
+
+Value *accumulatedOffsets(Value *Val, IRBuilder<> builder)
 {
-    if (!dyn_cast<ConstantInt>(startGEP->getOperand(1)))
-    {
+    GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(Val);
+    Value * operand2;
+    if (GEP->getOperand(1) != nullptr) {
+         operand2 = dyn_cast<Value>(GEP->getOperand(1));    
+    }else{
         return nullptr;
     }
 
-    APInt result = dyn_cast<ConstantInt>(startGEP->getOperand(1))->getValue();
-
-    GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(startGEP->getOperand(0));
-    while (GEP)
-    {
-        LOG_LINE("  GEP " << *GEP);
-        if (GEP->getOperand(1) != nullptr)
-        {
-            if (ConstantInt *value = dyn_cast<ConstantInt>(GEP->getOperand(1)))
-            {
-                result += value->getValue();
-                LOG_LINE("      INSIDE GEP ADDED " << value->getValue());
-            }
-            else
-            {
-                return loopOverVarUse(GEP->getOperand(1));
-                //return nullptr;
-            }
-        }
-        GEP = dyn_cast<GetElementPtrInst>(GEP->getOperand(0));
-    }
-
-    return ConstantInt::get(F.getContext(), result);
-}
-
-
-Value * loopOverVarUse(Value* startPointer){
     
+    Value *result = accumulatedOffsets(operand2, builder);
+    if (result == nullptr)
+    {
+        return (operand2);
+    }
+    return builder.CreateAdd(operand2, accumulatedOffsets(operand2, builder));
 }
-/*
-Value* val = cast<Value>(alloca_x);
-Value::use_iterator sUse = val->use_begin();
-Value::use_iterator sEnd = val->use_end();
-for (; sUse != sEnd; ++sUse) {
-    if(isa<LoadInst>(sUse)) // load inst
-    else if(isa<StoreInst>(sUse)) // store inst
-}
-*/
 
-bool BoundsCheckerPass::runOnModule(Module &M)
+Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
 {
-    // Retrieve a pointer to the helper function. The instrumentAllocations
-    // function will insert calls to this function for every allocation. This
-    // function is written in our runtime (runtime/dummy.c). To see its (LLVM)
-    // type, you can check runtime/obj/dummy.ll)
-    LLVMContext &C = M.getContext();
-    Type *VoidTy = Type::getVoidTy(C);
-    Type *Int32Ty = Type::getInt32Ty(C);
-    //   void @__coco_dummy_print_allocation(i32 %elems)
-    PrintAllocFunc =
+    GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(GEP->getOperand(1));
+    if (operand1 == nullptr)
+    {
+        return dyn_cast<Value>(operand1);
+    }
+    else
+    {
+        return getBasePointer(operand1, builder);
+    }
+}
+
+
+
+    bool BoundsCheckerPass::runOnModule(Module & M)
+    {
+        // Retrieve a pointer to the helper function. The instrumentAllocations
+        // function will insert calls to this function for every allocation. This
+        // function is written in our runtime (runtime/dummy.c). To see its (LLVM)
+        // type, you can check runtime/obj/dummy.ll)
+        LLVMContext &C = M.getContext();
+        Type *VoidTy = Type::getVoidTy(C);
+        Type *Int32Ty = Type::getInt32Ty(C);
+        //   void @__coco_dummy_print_allocation(i32 %elems)
+        PrintAllocFunc =
             cast<Function>(M.getOrInsertFunction("__coco_boundscheck_print_allocation",
                                                  VoidTy, Int32Ty));
 
-    // LLVM wants to know whether we made any modifications to the IR, so we
-    // keep track of this.
-    bool Changed = false;
+        // LLVM wants to know whether we made any modifications to the IR, so we
+        // keep track of this.
+        bool Changed = false;
 
-    for (Function &F : M)
-    {
-        // We want to skip instrumenting certain functions, like declarations
-        // and helper functions (e.g., our dummy_print_allocation)
-        if (!shouldInstrument(&F))
-            continue;
-
-        LOG_LINE("Visiting function " << F.getName());
-        for (BasicBlock &BB : F)
+        for (Function &F : M)
         {
-            for (Instruction &II : BB)
+            // We want to skip instrumenting certain functions, like declarations
+            // and helper functions (e.g., our dummy_print_allocation)
+            if (!shouldInstrument(&F))
+                continue;
+
+            LOG_LINE("Visiting function " << F.getName());
+
+            for (BasicBlock &BB : F)
             {
-                Instruction *I = &II;
-                //if it is a GEP and it has an index in addition to the base pointer, we process
-                if (isa<GetElementPtrInst>(I) && dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
+                for (Instruction &II : BB)
                 {
-                    Value *result = accumulatedOffsets(I, F);
-                    if (!result)
+                    Instruction *I = &II;
+                    //if it is a GEP and it has an index in addition to the base pointer, we process
+                    if (isa<GetElementPtrInst>(I) &&
+                        dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr &&
+                        dyn_cast<GetElementPtrInst>(I)->getOperand(2) == nullptr)
                     {
-                        LOG_LINE("NOT STATIC RESULT");
-                        //dynamic here
-                    }
-                    else
-                    {
-                        // static check
-                        LOG_LINE("baseptr: " << *dyn_cast<GetElementPtrInst>(I)->getOperand(0));
-                        LOG_LINE("RESULT:  " << *result);
+                        IRBuilder<> builder(&F.getEntryBlock()); //probably not get entry block
+                        CallInst *call = builder.CreateCall(PrintAllocFunc, {accumulatedOffsets(I,builder), getBasePointer(I,builder)});
+                        builder.Insert(call);
                     }
                 }
             }
+            Changed |= instrumentAllocations(F);
         }
-        Changed |= instrumentAllocations(F);
+
+        return Changed;
     }
 
-    return Changed;
-}
-
-char BoundsCheckerPass::ID = 0;
-static RegisterPass<BoundsCheckerPass> X("coco-boundscheck", "Example LLVM module pass that inserts prints for every allocation.");
+    char BoundsCheckerPass::ID = 0;
+    static RegisterPass<BoundsCheckerPass> X("coco-boundscheck", "Example LLVM module pass that inserts prints for every allocation.");
