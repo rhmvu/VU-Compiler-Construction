@@ -9,6 +9,7 @@ class BoundsCheckerPass : public ModulePass
     static char ID;
     BoundsCheckerPass() : ModulePass(ID) {}
     virtual bool runOnModule(Module &M) override;
+    bool runOnFunction(Function &F);
 
   private:
     Function *PrintAllocFunc;
@@ -82,7 +83,7 @@ Value *getBasePointer(GetElementPtrInst *gep)
 Value* getArraySize(GetElementPtrInst *gep){
     Value* basePointer = getBasePointer(gep);
     if(AllocaInst *alloca = dyn_cast<AllocaInst>(basePointer)){
-        return alloca->getOperand(0);
+        return alloca->getArraySize();
     }else {//if(Argument *arg = dyn_cast<Argument>(basePointer)){
         LOG_LINE("NOT AN ALLOCA, FAILING NOW");
         Constant *cons = dyn_cast<Constant>(basePointer);
@@ -116,11 +117,20 @@ bool BoundsCheckerPass::runOnModule(Module &M)
 
     for (Function &F : M)
     {
-        IRBuilder<> builder(&F.getEntryBlock()); //probably not get entry block
+        Changed |= runOnFunction(F);
+    }
+
+    return Changed;
+}
+
+bool BoundsCheckerPass::runOnFunction(Function &F){
+    bool Changed = false;
+    IRBuilder<> builder(&F.getEntryBlock());
+
         // We want to skip instrumenting certain functions, like declarations
         // and helper functions (e.g., our dummy_print_allocation)
         if (!shouldInstrument(&F))
-            continue;
+           return Changed;
 
         LOG_LINE("Visiting function " << F.getName());
 
@@ -132,20 +142,19 @@ bool BoundsCheckerPass::runOnModule(Module &M)
                 dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
             {
                 GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
-                builder.SetInsertPoint(I);
-                Value* offset = accumulatedOffsets(G,builder);
-                LOG_LINE("offsets = " << *offset);
-                Value* arraySize = getArraySize(G);
-                LOG_LINE("arraysize = " << *arraySize);
+                LOG_LINE(*G);
+                //builder.SetInsertPoint(I);
+                //Value* offset = accumulatedOffsets(G,builder);
+                //LOG_LINE("offsets = " << *offset);
+                //Value* arraySize = getArraySize(G);
+                //LOG_LINE("arraysize = " << *arraySize);
                 //CallInst *call = builder.CreateCall(PrintAllocFunc, {offset, arraySize});
                 //builder.Insert(call);
             }
         }
 
         Changed |= instrumentAllocations(F);
-    }
-
-    return Changed;
+        return Changed;
 }
 
 char BoundsCheckerPass::ID = 0;
