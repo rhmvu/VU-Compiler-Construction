@@ -1,10 +1,8 @@
 [BoundsCheckerPass] Visiting function foo
 [BoundsCheckerPass]   %a.idx = getelementptr i32, i32* %a, i32 %i.0
-[BoundsCheckerPass]   %a.idx.1 = getelementptr i32, i32* %a, i32 0
-[BoundsCheckerPass]   %.str.0 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.0, i32 0, i32 0
-[BoundsCheckerPass]   %a.idx.2 = getelementptr i32, i32* %a, i32 100
-[BoundsCheckerPass]   %.str.1 = getelementptr inbounds [3 x i8], [3 x i8]* @.str.1, i32 0, i32 0
-[BoundsCheckerPass] Visiting function main
-hard-arg.fc.obj: In function `main':
-llvm-link:(.text+0x5e): undefined reference to `__coco_boundscheck_print_allocation'
+[BoundsCheckerPass] offsets =   %i.0 = phi i32 [ 0, %entry ], [ %.8, %entry.wbody ]
+[BoundsCheckerPass] IT'S An ARG!!>> i32* %a
+[BoundsCheckerPass] NOT AN ALLOCA, FAILING NOW
+/usr/lib/gcc/x86_64-linux-gnu/7.3.0/../../../x86_64-linux-gnu/crt1.o: In function `_start':
+(.text+0x20): undefined reference to `main'
 clang-5.0: error: linker command failed with exit code 1 (use -v to see invocation)

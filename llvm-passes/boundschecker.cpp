@@ -118,7 +118,7 @@ bool BoundsCheckerPass::runOnModule(Module &M)
     //   void @__coco_dummy_print_allocation(i32 %elems)
     PrintAllocFunc =
         cast<Function>(M.getOrInsertFunction("__coco_boundscheck_print_allocation",
-                                             VoidTy, Int32Ty));
+                                             VoidTy, Int32Ty, Int32Ty));
 
     // LLVM wants to know whether we made any modifications to the IR, so we
     // keep track of this.
@@ -158,6 +158,10 @@ bool BoundsCheckerPass::runOnFunction(Function &F)
             LOG_LINE("offsets = " << *offset);
             Value* arraySize = getArraySize(G);
             LOG_LINE("arraysize = " << *arraySize);
+            // SmallVector<Value *, 4> assertArgs;
+            // assertArgs.push_back(offset);
+            // assertArgs.push_back(arraySize);
+            // CallInst *call = builder.CreateCall(PrintAllocFunc, {offset, arraySize});
             CallInst *call = builder.CreateCall(PrintAllocFunc, {offset, arraySize});
             builder.Insert(call);
             Changed = true;

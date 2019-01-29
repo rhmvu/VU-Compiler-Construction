@@ -1,7 +1,7 @@
 [BoundsCheckerPass] Visiting function main
 [BoundsCheckerPass]   %.str.0 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.0, i32 0, i32 0
-[BoundsCheckerPass]   %.9 = getelementptr i8, i8* %.str.0, i32 %i.0
-[BoundsCheckerPass]   %.str.1 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.1, i32 0, i32 0
-[BoundsCheckerPass]   %.str.2 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.2, i32 0, i32 0
-[BoundsCheckerPass]   %.16 = getelementptr i8, i8* %.str.2, i32 4
-[BoundsCheckerPass]   %.str.3 = getelementptr inbounds [3 x i8], [3 x i8]* @.str.3, i32 0, i32 0
+[BoundsCheckerPass] offsets = i32 0
+[BoundsCheckerPass] NOT AN ALLOCA, FAILING NOW
+/usr/lib/gcc/x86_64-linux-gnu/7.3.0/../../../x86_64-linux-gnu/crt1.o: In function `_start':
+(.text+0x20): undefined reference to `main'
+clang-5.0: error: linker command failed with exit code 1 (use -v to see invocation)
