@@ -1,7 +1,32 @@
-[BoundsCheckerPass] Visiting function main
 [BoundsCheckerPass]   %.str.0 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.0, i32 0, i32 0
 [BoundsCheckerPass] offsets = i32 0
-[BoundsCheckerPass] NOT AN ALLOCA, FAILING NOW
-/usr/lib/gcc/x86_64-linux-gnu/7.3.0/../../../x86_64-linux-gnu/crt1.o: In function `_start':
-(.text+0x20): undefined reference to `main'
+[BoundsCheckerPass] CONVERTING TO ARRAYTYPE
+[BoundsCheckerPass] arraysize = i32 4
+[BoundsCheckerPass]   %.9 = getelementptr i8, i8* %.str.0, i32 %i.0
+[BoundsCheckerPass] offsets =   %0 = add i32 %i.0, 0
+[BoundsCheckerPass] CONVERTING TO ARRAYTYPE
+[BoundsCheckerPass] arraysize = i32 4
+[BoundsCheckerPass]   %.str.1 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.1, i32 0, i32 0
+[BoundsCheckerPass] offsets = i32 0
+[BoundsCheckerPass] CONVERTING TO ARRAYTYPE
+[BoundsCheckerPass] arraysize = i32 4
+[BoundsCheckerPass]   %.str.2 = getelementptr inbounds [4 x i8], [4 x i8]* @.str.2, i32 0, i32 0
+[BoundsCheckerPass] offsets = i32 0
+[BoundsCheckerPass] CONVERTING TO ARRAYTYPE
+[BoundsCheckerPass] arraysize = i32 4
+[BoundsCheckerPass]   %.16 = getelementptr i8, i8* %.str.2, i32 4
+[BoundsCheckerPass] offsets = i32 4
+[BoundsCheckerPass] CONVERTING TO ARRAYTYPE
+[BoundsCheckerPass] arraysize = i32 4
+[BoundsCheckerPass]   %.str.3 = getelementptr inbounds [3 x i8], [3 x i8]* @.str.3, i32 0, i32 0
+[BoundsCheckerPass] offsets = i32 0
+[BoundsCheckerPass] CONVERTING TO ARRAYTYPE
+[BoundsCheckerPass] arraysize = i32 3
+simple-const.fc.obj: In function `main':
+llvm-link:(.text+0x11): undefined reference to `__coco_check_bounds'
+llvm-link:(.text+0x1d): undefined reference to `__coco_check_bounds'
+llvm-link:(.text+0x31): undefined reference to `__coco_check_bounds'
+llvm-link:(.text+0x47): undefined reference to `__coco_check_bounds'
+llvm-link:(.text+0x56): undefined reference to `__coco_check_bounds'
+simple-const.fc.obj:llvm-link:(.text+0x62): more undefined references to `__coco_check_bounds' follow
 clang-5.0: error: linker command failed with exit code 1 (use -v to see invocation)
