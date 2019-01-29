@@ -9,7 +9,6 @@ class BoundsCheckerPass : public ModulePass
     static char ID;
     BoundsCheckerPass() : ModulePass(ID) {}
     virtual bool runOnModule(Module &M) override;
-    bool runOnFunction(Function &F);
 
   private:
     Function *PrintAllocFunc;
@@ -117,20 +116,12 @@ bool BoundsCheckerPass::runOnModule(Module &M)
 
     for (Function &F : M)
     {
-        Changed |= runOnFunction(F);
-    }
-
-    return Changed;
-}
-
-bool BoundsCheckerPass::runOnFunction(Function &F){
-    bool Changed = false;
-    IRBuilder<> builder(&F.getEntryBlock());
-
         // We want to skip instrumenting certain functions, like declarations
         // and helper functions (e.g., our dummy_print_allocation)
         if (!shouldInstrument(&F))
-           return Changed;
+            continue;
+
+         IRBuilder<> builder(&F.getEntryBlock());
 
         LOG_LINE("Visiting function " << F.getName());
 
@@ -154,7 +145,9 @@ bool BoundsCheckerPass::runOnFunction(Function &F){
         }
 
         Changed |= instrumentAllocations(F);
-        return Changed;
+    }
+
+    return Changed;
 }
 
 char BoundsCheckerPass::ID = 0;
