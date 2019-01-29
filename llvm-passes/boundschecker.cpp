@@ -13,6 +13,7 @@ class BoundsCheckerPass : public ModulePass
   private:
     Function *PrintAllocFunc;
     bool instrumentAllocations(Function &F);
+    bool runOnFunction(Function &F);
     // Value *accumulatedOffsets(GetElementPtrInst *gep, IRBuilder<> builder);
     // Value *getBasePointer(Instruction *GEP, IRBuilder<> builder)
 };
@@ -79,20 +80,29 @@ Value *getBasePointer(GetElementPtrInst *gep)
     }
 }
 
-Value* getArraySize(GetElementPtrInst *gep){
-    Value* basePointer = getBasePointer(gep);
-    if(AllocaInst *alloca = dyn_cast<AllocaInst>(basePointer)){
+Value *getArraySize(GetElementPtrInst *gep)
+{
+    Value *basePointer = getBasePointer(gep);
+    if (AllocaInst *alloca = dyn_cast<AllocaInst>(basePointer))
+    {
         return alloca->getArraySize();
-    }else {//if(Argument *arg = dyn_cast<Argument>(basePointer)){
+    }
+    else
+    { 
+        
+        if(Argument *arg = dyn_cast<Argument>(basePointer)){
+            LOG_LINE("IT'S An ARG!!>> " << *arg);
+        }
         LOG_LINE("NOT AN ALLOCA, FAILING NOW");
-        Constant *cons = dyn_cast<Constant>(basePointer);
-        Type *type = cons->getType();
-        /*PointerType *ptrType = PointerType::get(type,0);
-        ArrayType *arrType = ptrType->getArrayElementType();
-        uint64_t arraySize = arrType->getArrayNumElements();
-        */
-       LOG_LINE("arraysize is probably not: " << type->getArrayNumElements());
-       return basePointer; //should return actual value here
+        exit(0);
+        // Constant *cons = dyn_cast<Constant>(basePointer);
+        // Type *type = cons->getType();
+        // /*PointerType *ptrType = PointerType::get(type,0);
+        // ArrayType *arrType = ptrType->getArrayElementType();
+        // uint64_t arraySize = arrType->getArrayNumElements();
+        // */
+        // LOG_LINE("arraysize is probably not: " << type->getArrayNumElements());
+        //return basePointer; //should return actual value here
     }
 }
 
@@ -116,37 +126,45 @@ bool BoundsCheckerPass::runOnModule(Module &M)
 
     for (Function &F : M)
     {
-        // We want to skip instrumenting certain functions, like declarations
-        // and helper functions (e.g., our dummy_print_allocation)
-        if (!shouldInstrument(&F))
-            continue;
-
-         IRBuilder<> builder(&F.getEntryBlock());
-
-        LOG_LINE("Visiting function " << F.getName());
-
-        for (Instruction &II : instructions(F))
-        {
-            Instruction *I = &II;
-            //if it is a GEP and it has an index in addition to the base pointer, we process
-            if (isa<GetElementPtrInst>(I) &&
-                dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
-            {
-                GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
-                LOG_LINE(*G);
-                //builder.SetInsertPoint(I);
-                //Value* offset = accumulatedOffsets(G,builder);
-                //LOG_LINE("offsets = " << *offset);
-                //Value* arraySize = getArraySize(G);
-                //LOG_LINE("arraysize = " << *arraySize);
-                //CallInst *call = builder.CreateCall(PrintAllocFunc, {offset, arraySize});
-                //builder.Insert(call);
-            }
-        }
-
-        Changed |= instrumentAllocations(F);
+        Changed |= runOnFunction(F);
     }
 
+    return Changed;
+}
+
+bool BoundsCheckerPass::runOnFunction(Function &F)
+{
+    bool Changed = false;
+
+    // We want to skip instrumenting certain functions, like declarations
+    // and helper functions (e.g., our dummy_print_allocation)
+    if (!shouldInstrument(&F))
+        return Changed;
+
+    IRBuilder<> builder(&F.getEntryBlock());
+    LOG_LINE("Visiting function " << F.getName());
+
+    for (Instruction &II : instructions(F))
+    {
+        Instruction *I = &II;
+        //if it is a GEP and it has an index in addition to the base pointer, we process
+        if (isa<GetElementPtrInst>(I) &&
+            dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
+        {
+            GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
+            LOG_LINE(*G);
+            builder.SetInsertPoint(I);
+            Value* offset = accumulatedOffsets(G,builder);
+            LOG_LINE("offsets = " << *offset);
+            Value* arraySize = getArraySize(G);
+            LOG_LINE("arraysize = " << *arraySize);
+            CallInst *call = builder.CreateCall(PrintAllocFunc, {offset, arraySize});
+            builder.Insert(call);
+            Changed = true;
+        }
+    }
+
+    Changed |= instrumentAllocations(F);
     return Changed;
 }
 
