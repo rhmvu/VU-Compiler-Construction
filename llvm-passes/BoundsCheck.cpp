@@ -17,14 +17,18 @@ class BoundsCheckerPass : public ModulePass
     bool runOnFunction(Function &F);
     Value* accumulatedOffset(GetElementPtrInst *gep, IRBuilder<> builder);
     //Value *getBasePointer(Instruction *GEP);
-    Value *getArraySize(Function &F, GetElementPtrInst *gep);
+    Value *getArraySize(Function &F, GetElementPtrInst *gep, Value *basePointer);
 };
 } // namespace
+
+
+SmallVector<Type*, 2> typeList;
+SmallVector<Argument*, 2> argList;
 
 /*
  * Finds all allocations in a function and inserts a call that prints its size.
  */
-/*bool BoundsCheckerPass::instrumentAllocations(Function &F)
+bool BoundsCheckerPass::instrumentAllocations(Function &F)
 {
     bool Changed = false;
 
@@ -44,6 +48,7 @@ class BoundsCheckerPass : public ModulePass
 
         if (isa<AllocaInst>(I))
         {
+            
             // GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
             // LOG_LINE(*G);
             // builder.SetInsertPoint(I);
@@ -60,7 +65,6 @@ class BoundsCheckerPass : public ModulePass
     }
     return Changed;
 }
-*/
 
 bool BoundsCheckerPass::instrumentGetElementPointers(Function &F)
 {
@@ -84,17 +88,19 @@ bool BoundsCheckerPass::instrumentGetElementPointers(Function &F)
             dyn_cast<GetElementPtrInst>(I)->getOperand(1) != nullptr)
         {
             GetElementPtrInst *G = dyn_cast<GetElementPtrInst>(I);
-            LOG_LINE(*G);
             builder.SetInsertPoint(I);
             Value *offset = accumulatedOffset(G, builder);
-            LOG_LINE("offsets = " << *offset);
-            Value *arraySize = getArraySize(F, G);
-            LOG_LINE("arraysize = " << *arraySize);
-        
+            // LOG_LINE("offsets = " << *offset);
+            Value *basePointer = getBasePointer(G);
+            Value *arraySize = getArraySize(F, G, basePointer);
+            
             // CallInst *call = 
             builder.CreateCall(BoundsCheckHelper, {offset, arraySize});
             //builder.Insert(call);
             Changed = true;
+        }
+        if (typeList.size != 0){
+            insertArgumentInFunction(F);
         }
     }
     return Changed;
@@ -129,9 +135,8 @@ Value *getBasePointer(GetElementPtrInst *gep)
     }
 }
 
-Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep)
+Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep, Value *basePointer)
 {
-    Value *basePointer = getBasePointer(gep);
     if (AllocaInst *alloca = dyn_cast<AllocaInst>(basePointer))
     {
         return alloca->getArraySize();
@@ -141,15 +146,19 @@ Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep)
         Type *ty = basePointer->getType();
         ArrayType *AT = dyn_cast<ArrayType>(ty->getPointerElementType());
         if (AT == nullptr){
-            insertArgumentInFunction(F,basePointer);
+            // get correct argumentnr instead, insertArgumentInFunction(F,basePointer);
             return basePointer; //Argument contains value at runtime  
         }
         return ConstantInt::get(Type::getInt32Ty(ty->getContext()), AT->getNumElements(), true);
     }
 }
 
-void insertArgumentInFunction(Function &F, Value* basePointer){
-    Function *newFuncPtr = addParamsToFunction();
+Function* insertArgumentInFunction(Function &F, Value* basePointer){
+    // Function func = *F;
+    // Function *funcPtr = &F;
+    // Function *newFuncPtr = addParamsToFunction(&F, typeList,argList);
+    return nullptr;
+
 }
 
 bool BoundsCheckerPass::runOnModule(Module &M)
