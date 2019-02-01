@@ -1,6 +1,7 @@
 #define DEBUG_TYPE "BoundsCheckerPass"
 #include "utils.h"
 
+
 namespace
 {
 class BoundsCheckerPass : public ModulePass
@@ -20,6 +21,7 @@ class BoundsCheckerPass : public ModulePass
     Value *getArraySize(Value *basePointer, Module &M, IRBuilder<> builder);
     Value *PrepareCloneFunc(Argument *A, Module &M);
     Value *cloneFunc(Argument *A, Module &M, IRBuilder<> builder);
+    bool argumentAndSizeExist(GetElementPtrInst *G, Module &M);
 };
 } // namespace
 
@@ -60,7 +62,7 @@ bool BoundsCheckerPass::instrumentGetElementPointers(Function &F, Module &M)
                 LOG_LINE("ARRAYSIZE ERROR, unhandled case");
             }
 
-            if (argumentAndSizeExist(G))
+            if (argumentAndSizeExist(G, M))
             {
                 arraySize = getArraySize(basePointer, M, builder);
                 break;
@@ -75,16 +77,18 @@ bool BoundsCheckerPass::instrumentGetElementPointers(Function &F, Module &M)
     return Changed;
 }
 
-bool argumentAndSizeExist(GetElementPtrInst *G)
+bool BoundsCheckerPass::argumentAndSizeExist(GetElementPtrInst *G, Module &M)
 {
     if (Value *bp = dyn_cast<Argument>(G->getOperand(0)))
     {
         Function *newFunc = dyn_cast<Function>(G->getParent());
-
+        Type *Int32Type = Type::getInt32Ty(M.getContext());
+        Argument *temp = new Argument(Int32Type);
+        temp->setName(bp->getName() + "cas");
         LOG_LINE("operand name: " << dyn_cast<Argument>(G->getOperand(0))->getName());
         for (Function::arg_iterator AIT = newFunc->arg_begin(); AIT != newFunc->arg_end(); AIT++)
         {
-            if (StringRef(AIT->getName()) == StringRef(bp->getName() + "cas"))
+            if (AIT->getName() == temp->getName())
             {
                 return true;
             }
@@ -93,7 +97,7 @@ bool argumentAndSizeExist(GetElementPtrInst *G)
     }
     else
     {
-        return false;cloneFu
+        return false;
     }
 }
 /*
@@ -134,7 +138,7 @@ Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
 
     Type *Int32Ty = Type::getInt32Ty(M.getContext());
     Type *Int32PtrTy = Type::getInt32PtrTy(M.getContext());
-    Value *newArg;
+    Value *newArg, *oldArg;
     SmallVector<Value *, 2> oldArgs;
     SmallVector<Type *, 2> argTypes;
     Function *parentFunction = A->getParent();
@@ -142,15 +146,9 @@ Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
     {
         if (CallInst *Ins = dyn_cast<CallInst>(U))
         {
-            int counter = 1;
             LOG_LINE("USER instruction" << *Ins);
             newArg = getArraySize(Ins, M, builder);
-            for (Value *O : Ins->operands())
-            {
-                oldArgs.push_back(O);
-                argTypes.push_back(Int32Ty);
-                counter++;
-            }
+            oldArg = Ins->getArgOperand(0);
             ArrayRef<Type *> newParamTypes = llvm::ArrayRef<Type *>(Int32Ty);
             SmallVector<Argument *, 8> newArgs;
             Function *newFunc = addParamsToFunction(parentFunction, newParamTypes, newArgs);
@@ -164,8 +162,16 @@ Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
                 }
             }
             Function *cloneFunc = cast<Function>(M.getOrInsertFunction(newFunc->getName(), newFunc->getReturnType(), Int32PtrTy, Int32Ty));
-
+            CallInst *replInst = builder.CreateCall(newFunc, {oldArg,newArg});
             //first should be ptr type
+
+            if(CallInst *UCI = dyn_cast<CallInst>(U)){
+                ReplaceInstWithInst(UCI,replInst);
+            }else{
+                LOG_LINE("ERROR CAST FAILED");
+            }
+            parentFunction->eraseFromParent();
+            instrumentGetElementPointers(*cloneFunc,M);
         }
     }
     return nullptr; //later nca

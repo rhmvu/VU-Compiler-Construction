@@ -1,0 +1,20 @@
+[BoundsCheckerPass]   %a.idx = getelementptr i32, i32* %a, i32 %i.0
+[BoundsCheckerPass] offsets =   %i.0 = phi i32 [ 0, %entry ], [ %.12, %entry.wbody ]
+[BoundsCheckerPass] arraysize = #0 0x0000000001e5563a llvm::sys::PrintStackTrace(llvm::raw_ostream&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e5563a)
+#1 0x0000000001e533ae llvm::sys::RunSignalHandlers() (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e533ae)
+#2 0x0000000001e53522 SignalHandler(int) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e53522)
+#3 0x00007f9c9a053890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
+#4 0x000000000186eefd getModuleFromVal(llvm::Value const*) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x186eefd)
+#5 0x000000000187cc1b llvm::Value::print(llvm::raw_ostream&, bool) const (/home/ruben/Workspace/coco/lib/install/bin/opt+0x187cc1b)
+#6 0x00007f9c98a9cb24 llvm::operator<<(llvm::raw_ostream&, llvm::Value const&) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Value.h:668:0
+#7 0x00007f9c98aa31b5 (anonymous namespace)::BoundsCheckerPass::instrumentGetElementPointers(llvm::Function&, llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/BoundsCheck.cpp:58:0
+#8 0x00007f9c98aa40fe (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/BoundsCheck.cpp:273:0
+#9 0x00000000019470ed llvm::legacy::PassManagerImpl::run(llvm::Module&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x19470ed)
+#10 0x00000000006db61c main (/home/ruben/Workspace/coco/lib/install/bin/opt+0x6db61c)
+#11 0x00007f9c98ce7b97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
+#12 0x00000000007475b9 _start (/home/ruben/Workspace/coco/lib/install/bin/opt+0x7475b9)
+Stack dump:
+0.	Program arguments: /home/ruben/Workspace/coco/lib/install/bin/opt -load /home/ruben/Workspace/coco/llvm-passes/obj/libllvm-passes.so -S -alloca-hoisting -mem2reg -coco-boundscheck -o simple-one.fc.optout 
+1.	Running pass 'Example LLVM module pass that inserts prints for every allocation.' on module '<stdin>'.
+../inc.sh: line 57: 31137 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
+     31138 Segmentation fault      (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"
