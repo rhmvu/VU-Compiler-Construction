@@ -76,7 +76,7 @@ Value *BoundsCheckerPass::argumentAndSizeExist(GetElementPtrInst *G, Function &F
         Function *newFunc = &F;
         Type *Int32Type = Type::getInt32Ty(M.getContext());
         Argument *temp = new Argument(Int32Type);
-        temp->setName(bp->getName() + "cas");
+        temp->setName(bp->getName() + "value");
         for (Function::arg_iterator AIT = newFunc->arg_begin(); AIT != newFunc->arg_end(); AIT++)
         {
             if (AIT->getName() == temp->getName())
@@ -111,7 +111,7 @@ Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
             SmallVector<Argument *, 8> newArgs;
             Function *newFunc = addParamsToFunction(parentFunction, newParamTypes, newArgs);
             arg = newArgs.pop_back_val();
-            arg->setName(A->getName() + "cas");
+            arg->setName(A->getName() + "value");
             for (Function::arg_iterator AIT = newFunc->arg_begin(); AIT != newFunc->arg_end(); AIT++)
             {
                 if (StringRef(AIT->getName()) == StringRef(""))
