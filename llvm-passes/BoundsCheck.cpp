@@ -16,10 +16,14 @@ class BoundsCheckerPass : public ModulePass
     bool instrumentGetElementPointers(Function &F);
     bool runOnFunction(Function &F);
     Value* accumulatedOffset(GetElementPtrInst *gep, IRBuilder<> builder);
-    //Value *getBasePointer(Instruction *GEP);
-    Value *getArraySize(Function &F, GetElementPtrInst *gep);
+    Value *getBasePointer(GetElementPtrInst *gep);
+    Value *getArraySize(Function &F, GetElementPtrInst *gep, Value* basePointer);
 };
 } // namespace
+
+SmallVector<Function*, 2> workList;
+SmallVector<Type*, 2> typeList;
+SmallVector<Argument*, 2> argList;
 
 /*
  * Finds all allocations in a function and inserts a call that prints its size.
@@ -88,8 +92,15 @@ bool BoundsCheckerPass::instrumentGetElementPointers(Function &F)
             builder.SetInsertPoint(I);
             Value *offset = accumulatedOffset(G, builder);
             LOG_LINE("offsets = " << *offset);
-            Value *arraySize = getArraySize(F, G);
+            Value *basePointer = getBasePointer(G);
+            Value *arraySize = getArraySize(F, G, basePointer);
             LOG_LINE("arraysize = " << *arraySize);
+
+            if (basePointer == arraySize) {
+               workList.push_back(&F);
+               //we have to assume something for arraysize now
+            }
+            
         
             // CallInst *call = 
             builder.CreateCall(BoundsCheckHelper, {offset, arraySize});
@@ -116,7 +127,7 @@ Value* BoundsCheckerPass::accumulatedOffset(GetElementPtrInst *gep, IRBuilder<> 
     }
 }
 
-Value *getBasePointer(GetElementPtrInst *gep)
+Value *BoundsCheckerPass::getBasePointer(GetElementPtrInst *gep)
 {
     GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(gep->getOperand(0));
     if (operand1 == nullptr)
@@ -129,9 +140,8 @@ Value *getBasePointer(GetElementPtrInst *gep)
     }
 }
 
-Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep)
+Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep, Value *basePointer)
 {
-    Value *basePointer = getBasePointer(gep);
     if (AllocaInst *alloca = dyn_cast<AllocaInst>(basePointer))
     {
         return alloca->getArraySize();
@@ -141,7 +151,7 @@ Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep)
         Type *ty = basePointer->getType();
         ArrayType *AT = dyn_cast<ArrayType>(ty->getPointerElementType());
         if (AT == nullptr){
-            insertArgumentInFunction(F,basePointer);
+            //insertArgumentInFunction(F,basePointer);
             return basePointer; //Argument contains value at runtime  
         }
         return ConstantInt::get(Type::getInt32Ty(ty->getContext()), AT->getNumElements(), true);
@@ -157,9 +167,9 @@ Value *BoundsCheckerPass::getArraySize(Function &F, GetElementPtrInst *gep)
 // 
 //
 
-void insertArgumentInFunction(Function &F, Value* basePointer){
+/*void insertArgumentInFunction(Function &F, Value* basePointer){
     Function *newFuncPtr = addParamsToFunction();
-}
+}*/
 
 bool BoundsCheckerPass::runOnModule(Module &M)
 {
@@ -183,6 +193,9 @@ bool BoundsCheckerPass::runOnModule(Module &M)
     {
         //Changed |= instrumentAllocations(F);
         Changed |= instrumentGetElementPointers(F);
+        if(Changed){
+            //dosomething
+        }
     }
 
     return Changed;

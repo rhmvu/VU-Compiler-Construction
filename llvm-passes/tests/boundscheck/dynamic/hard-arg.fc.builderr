@@ -6,24 +6,24 @@ opt: /home/koen/git/vu-coco-disttest/lib/src/llvm-5.0.0/lib/IR/Instructions.cpp:
 #0 0x0000000001e5563a llvm::sys::PrintStackTrace(llvm::raw_ostream&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e5563a)
 #1 0x0000000001e533ae llvm::sys::RunSignalHandlers() (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e533ae)
 #2 0x0000000001e53522 SignalHandler(int) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x1e53522)
-#3 0x00007fb15f814890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
-#4 0x00007fb15e4c5e97 gsignal /build/glibc-OTsEL5/glibc-2.27/signal/../sysdeps/unix/sysv/linux/raise.c:51:0
-#5 0x00007fb15e4c7801 abort /build/glibc-OTsEL5/glibc-2.27/stdlib/abort.c:81:0
-#6 0x00007fb15e4b739a __assert_fail_base /build/glibc-OTsEL5/glibc-2.27/assert/assert.c:89:0
-#7 0x00007fb15e4b7412 (/lib/x86_64-linux-gnu/libc.so.6+0x30412)
+#3 0x00007f7235209890 __restore_rt (/lib/x86_64-linux-gnu/libpthread.so.0+0x12890)
+#4 0x00007f7233ebae97 gsignal /build/glibc-OTsEL5/glibc-2.27/signal/../sysdeps/unix/sysv/linux/raise.c:51:0
+#5 0x00007f7233ebc801 abort /build/glibc-OTsEL5/glibc-2.27/stdlib/abort.c:81:0
+#6 0x00007f7233eac39a __assert_fail_base /build/glibc-OTsEL5/glibc-2.27/assert/assert.c:89:0
+#7 0x00007f7233eac412 (/lib/x86_64-linux-gnu/libc.so.6+0x30412)
 #8 0x000000000191bc8d llvm::CallInst::init(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, llvm::Twine const&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x191bc8d)
-#9 0x00007fb15e265f9e llvm::CallInst::CallInst(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, llvm::Twine const&, llvm::Instruction*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Instructions.h:1934:0
-#10 0x00007fb15e265e67 llvm::CallInst::Create(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, llvm::Twine const&, llvm::Instruction*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Instructions.h:1444:0
-#11 0x00007fb15e26805b llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::CreateCall(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::Twine const&, llvm::MDNode*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/IRBuilder.h:1669:0
-#12 0x00007fb15e267741 llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::CreateCall(llvm::Function*, llvm::ArrayRef<llvm::Value*>, llvm::Twine const&, llvm::MDNode*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/IRBuilder.h:1686:0
-#13 0x00007fb15e26698a (anonymous namespace)::BoundsCheckerPass::instrumentGetElementPointers(llvm::Function&) /home/ruben/Workspace/coco/llvm-passes/BoundsCheck.cpp:101:0
-#14 0x00007fb15e266d6e (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/BoundsCheck.cpp:184:0
+#9 0x00007f7233c5af0e llvm::CallInst::CallInst(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, llvm::Twine const&, llvm::Instruction*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Instructions.h:1934:0
+#10 0x00007f7233c5add7 llvm::CallInst::Create(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::ArrayRef<llvm::OperandBundleDefT<llvm::Value*> >, llvm::Twine const&, llvm::Instruction*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/Instructions.h:1444:0
+#11 0x00007f7233c5d187 llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::CreateCall(llvm::FunctionType*, llvm::Value*, llvm::ArrayRef<llvm::Value*>, llvm::Twine const&, llvm::MDNode*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/IRBuilder.h:1669:0
+#12 0x00007f7233c5c791 llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>::CreateCall(llvm::Function*, llvm::ArrayRef<llvm::Value*>, llvm::Twine const&, llvm::MDNode*) /home/ruben/Workspace/coco/lib/install/include/llvm/IR/IRBuilder.h:1686:0
+#13 0x00007f7233c5b94f (anonymous namespace)::BoundsCheckerPass::instrumentGetElementPointers(llvm::Function&) /home/ruben/Workspace/coco/llvm-passes/BoundsCheck.cpp:108:0
+#14 0x00007f7233c5bd1e (anonymous namespace)::BoundsCheckerPass::runOnModule(llvm::Module&) /home/ruben/Workspace/coco/llvm-passes/BoundsCheck.cpp:195:0
 #15 0x00000000019470ed llvm::legacy::PassManagerImpl::run(llvm::Module&) (/home/ruben/Workspace/coco/lib/install/bin/opt+0x19470ed)
 #16 0x00000000006db61c main (/home/ruben/Workspace/coco/lib/install/bin/opt+0x6db61c)
-#17 0x00007fb15e4a8b97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
+#17 0x00007f7233e9db97 __libc_start_main /build/glibc-OTsEL5/glibc-2.27/csu/../csu/libc-start.c:344:0
 #18 0x00000000007475b9 _start (/home/ruben/Workspace/coco/lib/install/bin/opt+0x7475b9)
 Stack dump:
 0.	Program arguments: /home/ruben/Workspace/coco/lib/install/bin/opt -load /home/ruben/Workspace/coco/llvm-passes/obj/libllvm-passes.so -S -alloca-hoisting -mem2reg -coco-boundscheck -o hard-arg.fc.optout 
 1.	Running pass 'Example LLVM module pass that inserts prints for every allocation.' on module '<stdin>'.
-../inc.sh: line 57:  6907 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
-      6908 Aborted                 (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"
+../inc.sh: line 57: 27649 Done                    frontend $testfile -I $RUNTIMEDIR/ -o-
+     27650 Aborted                 (core dumped) | myopt -alloca-hoisting -mem2reg $passes -o "$testfile.optout"
