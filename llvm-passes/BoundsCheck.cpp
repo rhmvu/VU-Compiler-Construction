@@ -13,7 +13,6 @@ class BoundsCheckerPass : public ModulePass
 
   private:
     Function *BoundsCheckHelper;
-    //bool instrumentAllocations(Function &F);
     bool instrumentGetElementPointers(Function &F, Module &M);
     bool runOnFunction(Function &F);
     Value *accumulatedOffset(GetElementPtrInst *gep, IRBuilder<> builder);
@@ -26,14 +25,12 @@ class BoundsCheckerPass : public ModulePass
 } // namespace
 
 bool functionCloned = false;
-Function *latestFunction;
 SmallVector<Function*, 2> deadList;
 
 
 bool BoundsCheckerPass::instrumentGetElementPointers(Function &F, Module &M)
 {
     bool Changed = false;
-    //latestFunction = &F;
     
 
     // We want to skip instrumenting certain functions, like declarations
@@ -44,8 +41,6 @@ bool BoundsCheckerPass::instrumentGetElementPointers(Function &F, Module &M)
     // Construct an IRBuilder (at a random insertion point) so we can reuse it
     // every time we need it.
     IRBuilder<> builder(&F.getEntryBlock());
-    //funcClone_t func;
-    //func.funcPtr = &F;
 
     // Iterate over all instructions in this function.
     for (Instruction &II : instructions(F))
@@ -80,15 +75,11 @@ bool BoundsCheckerPass::instrumentGetElementPointers(Function &F, Module &M)
             }
             LOG_LINE("arraysize = " << *arraySize);
 
-            // CallInst *call =
-            /*IRBuilder builderClone(&latestFunction->getEntryBlock());
-            builderClone.SetInsertPoint()*/
             builder.SetInsertPoint(G);
             builder.CreateCall(BoundsCheckHelper, {offset, arraySize});
             LOG_LINE("INSERTED CREATE CALL");
                         LOG_LINE("WHOLE MODULE JUST LIKE THIS:\n\n" << M);
 
-            //builder.Insert(call);
             Changed = true;
         }
     }
@@ -121,37 +112,7 @@ Value* BoundsCheckerPass::argumentAndSizeExist(GetElementPtrInst *G,Function &F,
         return nullptr;
     }
 }
-/*
-Value *BoundsCheckerPass::PrepareCloneFunc(Argument *A, Module &M){
-    //must be argumnet
-    
-    Type* Int32Ty = Type::getInt32Ty(M.getContext());
-    Value *newArg;
-    SmallVector<Value*,2> oldArgs;
-    SmallVector<Type*,2> argTypes;
-    Function *parentFunction = A->getParent();
-    for(User *U : parentFunction->users()){
-        if(CallInst *Ins = dyn_cast<CallInst>(U)){
-            int counter = 1;
-            LOG_LINE("USER instruction" << *Ins);
-            newArg = getArraySize(Ins, M);
-            for(Value *O :Ins->operands()){
-                oldArgs.push_back(O);
-                argTypes.push_back(Int32Ty);
-                counter++;
-            }
-            ArrayRef<Type*> newTypes = llvm::ArrayRef<Type*>(Int32Ty);
-            SmallVector<Argument*,2> newArgs;
-            Function *newFunc = addParamsToFunction(parentFunction,argTypes,newArgs);
-            Argument *nca = newArgs.pop_back_val();
-            nca->setName(A->getName());
-            newFunc->eraseFromParent();
-            return nca;
-            
-        }
-    }
 
-}*/
 
 Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
 {
@@ -161,8 +122,8 @@ Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
     Type *Int32PtrTy = Type::getInt32PtrTy(M.getContext());
     Value *newArg, *oldArg;
     Argument *nca;
-    SmallVector<Value *, 2> oldArgs;
-    SmallVector<Type *, 2> argTypes;
+    // SmallVector<Value *, 2> oldArgs;
+    // SmallVector<Type *, 2> argTypes;
     Function *parentFunction = A->getParent();
     for (User *U : parentFunction->users())
     {
@@ -189,14 +150,10 @@ Value *BoundsCheckerPass::cloneFunc(Argument *A, Module &M, IRBuilder<> builder)
             builder.CreateCall(newFunc, {oldArg,newArg}); //CallInst *replInst = 
             Ins->eraseFromParent();
             //first should be ptr type
-            LOG_LINE("WHOLE MODULE JUST LIKE THIS:\n\n" << M);
-/*
-            if(CallInst *UCI = dyn_cast<CallInst>(U)){
-                ReplaceInstWithInst(UCI,replInst);
-            }else{
-                LOG_LINE("ERROR CAST FAILED");
-            }*/
+
+            LOG_LINE("WHOLE MODULE JUST LIKE THIS:\n\n" << M);           
             deadList.push_back(parentFunction);
+            
             LOG_LINE("SUCESSFULLYCLONED FUNCITONSSDFDF");
             instrumentGetElementPointers(*cloneFunc,M);
             functionCloned = true;
@@ -236,16 +193,8 @@ Value *BoundsCheckerPass::getArraySize(Value *basePointer, Module &M, IRBuilder<
     }
 }
 
-// class funcClone
-// {
-//   public:
-//     Function* Func;
-//     SmallVector<Argument*, 2> newArgs();
-// };
-
 Value *BoundsCheckerPass::accumulatedOffset(GetElementPtrInst *gep, IRBuilder<> builder)
 {
-    // GetElementPtrInst *GEP = dyn_cast<GetElementPtrInst>(gep);
     GetElementPtrInst *operand1 = dyn_cast<GetElementPtrInst>(gep->getOperand(0));
     Value *operand2 = gep->getOperand(1);
 
@@ -272,18 +221,6 @@ Value *BoundsCheckerPass::getBasePointer(GetElementPtrInst *gep)
     }
 }
 
-//first add all pointertypes args in functions to worklist
-// for every arg in worklist with pointertype add count
-// for every count add arg in function, with the list tpye and argname starting
-// then add them to the function and loop through all USERS to add these arguments as wel.
-// then when these arguments are added loop to these users each as wel adding them recursively
-// start from allocas
-//
-//
-
-/*void insertArgumentInFunction(Function &F, Value* basePointer){
-    Function *newFuncPtr = addParamsToFunction();
-}*/
 
 bool BoundsCheckerPass::runOnModule(Module &M)
 {
@@ -310,10 +247,7 @@ bool BoundsCheckerPass::runOnModule(Module &M)
         Changed |= instrumentGetElementPointers(F, M);
         LOG_LINE("DONE WITH FUNCTION "<< F);
 
-        if (Changed)
-        {
-            //
-        }
+      
     }
     for(Function *item: deadList)
     {
