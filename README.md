@@ -1,6 +1,11 @@
 Compiler Construction framework
 ===============================
 
+## Grades
+
+Exact grades unknown. First 2 around 6 or 7? The last assignment probably received the lowest grade.
+
+
 Overview
 --------
 
